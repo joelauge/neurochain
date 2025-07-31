@@ -5,8 +5,8 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  basePath: process.env.NODE_ENV === 'production' ? '/neurochain' : '',
-  assetPrefix: process.env.NODE_ENV === 'production' ? '/neurochain/' : '',
+  // Remove basePath and assetPrefix for GitHub Pages deployment
+  // These will be handled by the GitHub Pages configuration
 }
 
 module.exports = nextConfig 
