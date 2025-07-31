@@ -7,7 +7,13 @@ import {
   Play,
   Square,
   RotateCcw,
-  ExternalLink
+  ExternalLink,
+  Cpu,
+  Network,
+  Database,
+  Eye,
+  Zap,
+  TrendingUp
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -54,11 +60,11 @@ export default function DemoPage() {
 
   const generateDecision = (question: string): Decision => {
     const decisions = [
-      "Approve with conditions",
-      "Reject due to risk factors",
-      "Require additional documentation",
-      "Approve immediately",
-      "Flag for manual review"
+      "APPROVE WITH CONDITIONS",
+      "REJECT DUE TO RISK FACTORS",
+      "REQUIRE ADDITIONAL DOCUMENTATION",
+      "APPROVE IMMEDIATELY",
+      "FLAG FOR MANUAL REVIEW"
     ];
     
     const reasoning = [
@@ -157,85 +163,131 @@ export default function DemoPage() {
   }, [isRunning, processNextDecision]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-black relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-purple-900/20 to-cyan-900/20"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.1),transparent_50%)]"></div>
+        
+        {/* Grid Pattern */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `
+              linear-gradient(rgba(120,119,198,0.1) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(120,119,198,0.1) 1px, transparent 1px)
+            `,
+            backgroundSize: '50px 50px'
+          }}></div>
+        </div>
+
+        {/* Floating Particles */}
+        {[...Array(15)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-1 h-1 bg-cyan-400 rounded-full animate-pulse"
+            style={{
+              left: Math.random() * 100 + '%',
+              top: Math.random() * 100 + '%',
+              animationDelay: Math.random() * 2 + 's',
+              animationDuration: Math.random() * 2 + 2 + 's'
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="container mx-auto px-4 py-8 relative z-10">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-4 flex items-center justify-center gap-3">
-            <Brain className="w-10 h-10 text-purple-400" />
-            Neurochain AI Decision Demo
+        <div className="text-center mb-12">
+          <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tight">
+            <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
+              NEUROCHAIN
+            </span>
+            <br />
+            <span className="text-white text-4xl md:text-5xl">AI DECISION DEMO</span>
           </h1>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
             Watch AI decisions being made, recorded on the blockchain, and validated by human consensus in real-time.
           </p>
         </div>
 
         {/* Controls */}
-        <div className="flex justify-center gap-4 mb-8">
+        <div className="flex justify-center gap-6 mb-12">
           <button
             onClick={startDemo}
             disabled={isRunning}
-            className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 rounded-lg font-semibold transition-colors"
+            className="group relative px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 disabled:from-gray-600 disabled:to-gray-700 text-white rounded-xl font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-green-500/25 disabled:hover:scale-100 disabled:hover:shadow-none"
           >
-            <Play className="w-5 h-5" />
-            Start Demo
+            <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity"></div>
+            <div className="relative flex items-center gap-3">
+              <Play className="w-6 h-6" />
+              <span>START DEMO</span>
+            </div>
           </button>
           <button
             onClick={stopDemo}
             disabled={!isRunning}
-            className="flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 rounded-lg font-semibold transition-colors"
+            className="group relative px-8 py-4 bg-gradient-to-r from-red-600 to-pink-600 disabled:from-gray-600 disabled:to-gray-700 text-white rounded-xl font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-red-500/25 disabled:hover:scale-100 disabled:hover:shadow-none"
           >
-            <Square className="w-5 h-5" />
-            Stop Demo
+            <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-pink-600 rounded-xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity"></div>
+            <div className="relative flex items-center gap-3">
+              <Square className="w-6 h-6" />
+              <span>STOP DEMO</span>
+            </div>
           </button>
           <button
             onClick={resetDemo}
-            className="flex items-center gap-2 px-6 py-3 bg-gray-600 hover:bg-gray-700 rounded-lg font-semibold transition-colors"
+            className="group relative px-8 py-4 bg-gradient-to-r from-gray-600 to-slate-600 text-white rounded-xl font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-gray-500/25"
           >
-            <RotateCcw className="w-5 h-5" />
-            Reset
+            <div className="absolute inset-0 bg-gradient-to-r from-gray-600 to-slate-600 rounded-xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity"></div>
+            <div className="relative flex items-center gap-3">
+              <RotateCcw className="w-6 h-6" />
+              <span>RESET</span>
+            </div>
           </button>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center">
-            <div className="text-2xl font-bold text-purple-400">{stats.totalDecisions}</div>
-            <div className="text-sm text-gray-300">Total Decisions</div>
-          </div>
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center">
-            <div className="text-2xl font-bold text-green-400">{stats.validatedDecisions}</div>
-            <div className="text-sm text-gray-300">Validated</div>
-          </div>
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center">
-            <div className="text-2xl font-bold text-blue-400">{stats.averageConfidence.toFixed(1)}%</div>
-            <div className="text-sm text-gray-300">Avg Confidence</div>
-          </div>
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center">
-            <div className="text-2xl font-bold text-yellow-400">{stats.totalValidators}</div>
-            <div className="text-sm text-gray-300">Validators</div>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+          {[
+            { label: "TOTAL DECISIONS", value: stats.totalDecisions, color: "cyan", icon: <Brain className="w-8 h-8" /> },
+            { label: "VALIDATED", value: stats.validatedDecisions, color: "green", icon: <Shield className="w-8 h-8" /> },
+            { label: "AVG CONFIDENCE", value: stats.averageConfidence.toFixed(1) + "%", color: "purple", icon: <TrendingUp className="w-8 h-8" /> },
+            { label: "VALIDATORS", value: stats.totalValidators, color: "yellow", icon: <Network className="w-8 h-8" /> }
+          ].map((stat, index) => (
+            <div key={index} className={`group relative bg-gradient-to-br from-${stat.color}-900/20 to-${stat.color}-600/10 backdrop-blur-xl border border-${stat.color}-500/30 rounded-2xl p-6 text-center hover:border-${stat.color}-400/50 transition-all duration-300 hover:scale-105`}>
+              <div className={`text-${stat.color}-400 mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                {stat.icon}
+              </div>
+              <div className={`text-3xl font-black text-${stat.color}-400 mb-2`}>{stat.value}</div>
+              <div className="text-sm text-gray-300 font-medium tracking-wider">{stat.label}</div>
+            </div>
+          ))}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Recent AI Decisions */}
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-              <Brain className="w-6 h-6 text-purple-400" />
-              Recent AI Decisions
+          <div className="bg-gradient-to-br from-cyan-900/20 to-cyan-600/10 backdrop-blur-xl border border-cyan-500/30 rounded-2xl p-8">
+            <h2 className="text-3xl font-black mb-6 flex items-center gap-3">
+              <div className="relative">
+                <Brain className="w-8 h-8 text-cyan-400" />
+                <div className="absolute inset-0 w-8 h-8 bg-cyan-400/20 rounded-full animate-pulse"></div>
+              </div>
+              <span className="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
+                RECENT AI DECISIONS
+              </span>
             </h2>
-            <div className="space-y-4">
+            <div className="space-y-4 max-h-96 overflow-y-auto">
               {decisions.map((decision) => (
-                <div key={decision.id} className="bg-white/5 rounded-lg p-4 border border-white/10">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-semibold text-sm">{decision.question}</h3>
-                    <span className="text-xs bg-purple-600 px-2 py-1 rounded">{decision.confidence}%</span>
+                <div key={decision.id} className="bg-black/30 backdrop-blur-sm rounded-xl p-4 border border-cyan-500/20 hover:border-cyan-400/40 transition-all duration-300">
+                  <div className="flex justify-between items-start mb-3">
+                    <h3 className="font-bold text-sm text-white">{decision.question}</h3>
+                    <span className="text-xs bg-gradient-to-r from-cyan-600 to-purple-600 px-3 py-1 rounded-full font-bold">{decision.confidence}%</span>
                   </div>
-                  <p className="text-sm text-gray-300 mb-2">{decision.decision}</p>
-                  <p className="text-xs text-gray-400">{decision.reasoning}</p>
-                  <div className="flex justify-between items-center mt-2 text-xs text-gray-500">
+                  <p className="text-sm text-cyan-300 mb-2 font-medium">{decision.decision}</p>
+                  <p className="text-xs text-gray-400 mb-3">{decision.reasoning}</p>
+                  <div className="flex justify-between items-center text-xs text-gray-500">
                     <span>{decision.timestamp.toLocaleTimeString()}</span>
-                    <span className="font-mono">{decision.blockHash.substring(0, 8)}...</span>
+                    <span className="font-mono text-cyan-400">{decision.blockHash.substring(0, 8)}...</span>
                   </div>
                 </div>
               ))}
@@ -243,25 +295,34 @@ export default function DemoPage() {
           </div>
 
           {/* Blockchain Transactions */}
-          <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
-            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-              <Shield className="w-6 h-6 text-green-400" />
-              Blockchain Transactions
+          <div className="bg-gradient-to-br from-purple-900/20 to-purple-600/10 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-8">
+            <h2 className="text-3xl font-black mb-6 flex items-center gap-3">
+              <div className="relative">
+                <Network className="w-8 h-8 text-purple-400" />
+                <div className="absolute inset-0 w-8 h-8 bg-purple-400/20 rounded-full animate-pulse"></div>
+              </div>
+              <span className="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
+                BLOCKCHAIN TRANSACTIONS
+              </span>
             </h2>
-            <div className="space-y-4">
+            <div className="space-y-4 max-h-96 overflow-y-auto">
               {transactions.map((tx) => (
-                <div key={tx.id} className="bg-white/5 rounded-lg p-4 border border-white/10">
-                  <div className="flex justify-between items-start mb-2">
-                    <span className="font-mono text-sm">{tx.hash.substring(0, 12)}...</span>
-                    <span className={`text-xs px-2 py-1 rounded ${
-                      tx.status === 'validated' ? 'bg-green-600' :
-                      tx.status === 'confirmed' ? 'bg-yellow-600' : 'bg-gray-600'
+                <div key={tx.id} className="bg-black/30 backdrop-blur-sm rounded-xl p-4 border border-purple-500/20 hover:border-purple-400/40 transition-all duration-300">
+                  <div className="flex justify-between items-start mb-3">
+                    <span className="font-mono text-sm text-purple-300">{tx.hash.substring(0, 12)}...</span>
+                    <span className={`text-xs px-3 py-1 rounded-full font-bold ${
+                      tx.status === 'validated' ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white' :
+                      tx.status === 'confirmed' ? 'bg-gradient-to-r from-yellow-600 to-orange-600 text-white' : 
+                      'bg-gradient-to-r from-gray-600 to-slate-600 text-white'
                     }`}>
-                      {tx.status}
+                      {tx.status.toUpperCase()}
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-xs text-gray-400">
-                    <span>{tx.validators} validators</span>
+                    <span className="flex items-center gap-1">
+                      <Network className="w-3 h-3" />
+                      {tx.validators} validators
+                    </span>
                     <span>{tx.timestamp.toLocaleTimeString()}</span>
                   </div>
                 </div>
@@ -271,13 +332,16 @@ export default function DemoPage() {
         </div>
 
         {/* Back to Home */}
-        <div className="text-center mt-8">
+        <div className="text-center mt-12">
           <Link 
             href="/" 
-            className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold transition-colors"
+            className="group relative inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-cyan-600 to-purple-600 text-white rounded-xl font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/25"
           >
-            <ExternalLink className="w-5 h-5" />
-            Back to Home
+            <div className="absolute inset-0 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity"></div>
+            <div className="relative flex items-center gap-3">
+              <ExternalLink className="w-6 h-6" />
+              <span>BACK TO HOME</span>
+            </div>
           </Link>
         </div>
       </div>
