@@ -202,3 +202,207 @@ body {
 .to-orange-400 {
   --tw-gradient-to: #fb923c;
 }
+
+/* Advanced Sci-Fi Effects */
+.relative {
+  position: relative;
+}
+
+.overflow-hidden {
+  overflow: hidden;
+}
+
+.absolute {
+  position: absolute;
+}
+
+.inset-0 {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+/* Animated Background Gradients */
+.bg-gradient-to-br.from-black.via-purple-900\/20.to-cyan-900\/20 {
+  background: linear-gradient(to bottom right, #000000, rgba(88, 28, 135, 0.2), rgba(34, 211, 238, 0.2));
+}
+
+.bg-\[radial-gradient\(circle_at_50\%_50\%,rgba\(120,119,198,0\.1\),transparent_50\%\)\] {
+  background: radial-gradient(circle at 50% 50%, rgba(120, 119, 198, 0.1), transparent 50%);
+}
+
+/* Grid Pattern */
+.grid-pattern {
+  background-image: 
+    linear-gradient(rgba(120, 119, 198, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120, 119, 198, 0.1) 1px, transparent 1px);
+  background-size: 50px 50px;
+  opacity: 0.2;
+}
+
+/* Floating Particles */
+.floating-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background-color: #22d3ee;
+  border-radius: 50%;
+  animation: float 15s linear infinite;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px) translateX(0px);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100vh) translateX(100px);
+    opacity: 0;
+  }
+}
+
+/* Glowing Cursor Effect */
+.cursor-glow {
+  position: fixed;
+  width: 384px;
+  height: 384px;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(circle, rgba(120, 119, 198, 0.1) 0%, transparent 70%);
+  transition: all 0.1s ease;
+}
+
+/* Enhanced Button Styling */
+.btn-sci-fi {
+  background: linear-gradient(135deg, #22d3ee, #a78bfa);
+  border: 2px solid #22d3ee;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.3);
+}
+
+.btn-sci-fi:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 30px rgba(34, 211, 238, 0.5);
+  background: linear-gradient(135deg, #a78bfa, #22d3ee);
+}
+
+/* Glass Morphism Cards */
+.glass-card {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(34, 211, 238, 0.3);
+  border-radius: 16px;
+  padding: 24px;
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  border-color: rgba(34, 211, 238, 0.6);
+  transform: scale(1.02);
+  box-shadow: 0 0 30px rgba(34, 211, 238, 0.2);
+}
+
+/* Gradient Text Effects */
+.gradient-text {
+  background: linear-gradient(135deg, #22d3ee, #a78bfa, #22d3ee);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gradient-shift 3s ease infinite;
+}
+
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Navigation Styling */
+.nav-sci-fi {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(24px);
+  border-bottom: 1px solid rgba(34, 211, 238, 0.2);
+}
+
+/* Hero Section */
+.hero-title {
+  font-size: 4rem;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #22d3ee, #a78bfa, #22d3ee);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gradient-shift 3s ease infinite;
+}
+
+/* Feature Cards */
+.feature-card {
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.1), rgba(167, 139, 250, 0.1));
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(34, 211, 238, 0.3);
+  border-radius: 16px;
+  padding: 24px;
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: scale(1.05);
+  border-color: rgba(34, 211, 238, 0.6);
+  box-shadow: 0 0 30px rgba(34, 211, 238, 0.2);
+}
+
+/* Stats Cards */
+.stats-card {
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.2), rgba(167, 139, 250, 0.1));
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(34, 211, 238, 0.3);
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.stats-card:hover {
+  transform: scale(1.05);
+  border-color: rgba(34, 211, 238, 0.6);
+  box-shadow: 0 0 30px rgba(34, 211, 238, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2.5rem;
+  }
+  
+  .btn-sci-fi {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+  
+  .glass-card,
+  .feature-card,
+  .stats-card {
+    padding: 16px;
+  }
+}
