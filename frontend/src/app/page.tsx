@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { 
   Brain, Shield, Zap, TrendingUp, ArrowRight, FileText,
   Cpu, Network, Database, Lock, Eye, CircuitBoard
@@ -9,16 +8,10 @@ import {
 
 export default function HomePage() {
   const [isWalletConnected, setIsWalletConnected] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isBrowser, setIsBrowser] = useState(false);
 
   useEffect(() => {
     setIsBrowser(true);
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
   const handleWalletConnect = () => {
@@ -28,245 +21,155 @@ export default function HomePage() {
   const features = [
     {
       title: "AI TRANSPARENCY",
-      description: "Every AI decision is recorded on the blockchain with full traceability and explainability.",
-      icon: <Eye className="w-8 h-8" />,
-      color: "cyan"
+      description: "Every AI decision is recorded on the blockchain with full traceability and explainability, ensuring complete transparency in the decision-making process.",
+      icon: <Eye className="w-12 h-12" />
     },
     {
       title: "HUMAN VALIDATION",
-      description: "Decentralized network of human validators ensures AI decisions are fair and accurate.",
-      icon: <Shield className="w-8 h-8" />,
-      color: "green"
+      description: "Decentralized network of human validators ensures AI decisions are fair, ethical, and accurate through collective intelligence.",
+      icon: <Shield className="w-12 h-12" />
     },
     {
       title: "CONTINUOUS EVOLUTION",
-      description: "AI models improve through collective human feedback and validation.",
-      icon: <TrendingUp className="w-8 h-8" />,
-      color: "purple"
+      description: "AI models improve through collective human feedback and validation, creating a self-improving system that learns from diverse perspectives.",
+      icon: <TrendingUp className="w-12 h-12" />
     }
   ];
 
   const techStack = [
-    { name: "Next.js", icon: <Cpu className="w-6 h-6" />, color: "cyan" },
-    { name: "FastAPI", icon: <Database className="w-6 h-6" />, color: "green" },
-    { name: "Ethereum", icon: <Network className="w-6 h-6" />, color: "purple" },
-    { name: "LangChain", icon: <CircuitBoard className="w-6 h-6" />, color: "yellow" }
+    { name: "Next.js", icon: <Cpu className="w-10 h-10" /> },
+    { name: "FastAPI", icon: <Database className="w-10 h-10" /> },
+    { name: "Ethereum", icon: <Network className="w-10 h-10" /> },
+    { name: "LangChain", icon: <CircuitBoard className="w-10 h-10" /> }
   ];
 
   return (
-    <div className="bg-black relative overflow-hidden min-h-screen">
+    <div className="min-h-screen">
       {/* Animated Background */}
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-purple-900/20 to-cyan-900/20"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.1),transparent_50%)]"></div>
-        
-        {/* Grid Pattern */}
-        <div className="absolute inset-0 grid-pattern"></div>
+      <div className="animated-bg"></div>
 
-        {/* Floating Particles */}
-        {isBrowser && [...Array(20)].map((_, i) => (
-          <div
-            key={i}
-            className="floating-particle"
-            style={{
-              left: Math.random() * 100 + '%',
-              top: Math.random() * 100 + '%',
-              animationDelay: Math.random() * 10 + 's',
-              animationDuration: Math.random() * 10 + 10 + 's'
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Glowing Cursor Effect */}
+      {/* Floating Particles */}
       {isBrowser && (
-        <div 
-          className="cursor-glow"
-          style={{
-            left: mousePosition.x - 192,
-            top: mousePosition.y - 192,
-          }}
-        />
+        <div className="particles-container">
+          {[...Array(30)].map((_, i) => (
+            <div
+              key={i}
+              className="particle"
+              style={{
+                left: Math.random() * 100 + '%',
+                animationDelay: Math.random() * 20 + 's',
+                animationDuration: Math.random() * 10 + 20 + 's'
+              }}
+            />
+          ))}
+        </div>
       )}
 
       {/* Navigation */}
-      <nav className="nav-sci-fi fixed top-0 w-full z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <motion.div 
-              className="flex items-center space-x-3"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-            >
-              <div className="relative">
-                <Brain className="w-8 h-8 text-cyan-400" />
-                <div className="absolute inset-0 w-8 h-8 bg-cyan-400/20 rounded-full animate-pulse"></div>
-              </div>
-              <span className="text-xl font-bold text-white tracking-wider">
-                <span className="text-cyan-400">NEURO</span>CHAIN
-              </span>
-            </motion.div>
-            <motion.button
-              onClick={handleWalletConnect}
-              className={`btn-sci-fi ${
-                isWalletConnected 
-                  ? 'bg-green-600/20 border-green-400 text-green-400' 
-                  : ''
-              }`}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-            >
-              {isWalletConnected ? 'CONNECTED' : 'CONNECT WALLET'}
-            </motion.button>
-          </div>
+      <nav className="nav-glass">
+        <div className="nav-container">
+          <a href="/" className="logo">
+            <div className="logo-icon">
+              <Brain />
+            </div>
+            <span>NEUROCHAIN</span>
+          </a>
+          <button
+            onClick={handleWalletConnect}
+            className={`connect-btn ${isWalletConnected ? 'connected' : ''}`}
+          >
+            {isWalletConnected ? 'CONNECTED' : 'CONNECT WALLET'}
+          </button>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="relative z-10 pt-32 pb-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto text-center">
-          <motion.h1 
-            className="hero-title mb-8"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1 }}
-          >
+      <section className="hero">
+        <div className="hero-container">
+          <h1 className="hero-title">
             TRANSPARENT AI DECISION MAKING
-          </motion.h1>
-          <motion.p 
-            className="text-xl md:text-2xl text-gray-300 mb-12 max-w-4xl mx-auto"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.2 }}
-          >
+          </h1>
+          <p className="hero-subtitle">
             Revolutionizing AI decision-making with blockchain technology, creating an{' '}
-            <span className="text-cyan-400 font-bold">immutable, auditable framework</span>{' '}
+            <span className="hero-highlight">immutable, auditable framework</span>{' '}
             that ensures transparency and accountability in every AI decision.
-          </motion.p>
-          <motion.div 
-            className="flex flex-col sm:flex-row gap-6 justify-center"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.4 }}
-          >
-            <a href="/demo" className="btn-sci-fi inline-flex items-center gap-3">
+          </p>
+          <div className="hero-buttons">
+            <a href="/demo" className="hero-btn">
               <Zap className="w-5 h-5" />
               LAUNCH DEMO
             </a>
-            <a href="/whitepaper" className="btn-sci-fi inline-flex items-center gap-3">
+            <a href="/whitepaper" className="hero-btn secondary">
               <FileText className="w-5 h-5" />
               READ WHITEPAPER
             </a>
-          </motion.div>
+          </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="relative z-10 py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <motion.h2 
-            className="gradient-text text-4xl md:text-6xl font-black text-center mb-16"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1 }}
-          >
-            WHY NEUROCHAIN?
-          </motion.h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <section className="section">
+        <div className="section-container">
+          <h2 className="section-title">WHY NEUROCHAIN?</h2>
+          <p className="section-subtitle">
+            Traditional AI systems operate as black boxes. Neurochain brings transparency and accountability 
+            to AI decision-making through blockchain technology.
+          </p>
+          <div className="features-grid">
             {features.map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                className="feature-card"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: index * 0.2 }}
-              >
-                <div className={`text-${feature.color}-400 mb-4`}>
+              <div key={feature.title} className="feature-card">
+                <div className="feature-icon">
                   {feature.icon}
                 </div>
-                <h3 className={`text-${feature.color}-400 text-xl font-bold mb-4`}>
-                  {feature.title}
-                </h3>
-                <p className="text-gray-300">
-                  {feature.description}
-                </p>
-              </motion.div>
+                <h3 className="feature-title">{feature.title}</h3>
+                <p className="feature-description">{feature.description}</p>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
       {/* Technology Stack */}
-      <section className="relative z-10 py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <motion.h2 
-            className="gradient-text text-4xl md:text-6xl font-black text-center mb-16"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1 }}
-          >
-            TECHNOLOGY STACK
-          </motion.h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {techStack.map((tech, index) => (
-              <motion.div
-                key={tech.name}
-                className="feature-card text-center"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: index * 0.1 }}
-              >
-                <div className={`text-${tech.color}-400 mb-4 flex justify-center`}>
+      <section className="section">
+        <div className="section-container">
+          <h2 className="section-title">TECHNOLOGY STACK</h2>
+          <p className="section-subtitle">
+            Built with cutting-edge technologies for scalability, security, and performance.
+          </p>
+          <div className="tech-grid">
+            {techStack.map((tech) => (
+              <div key={tech.name} className="tech-card">
+                <div className="tech-icon">
                   {tech.icon}
                 </div>
-                <h3 className={`text-${tech.color}-400 text-lg font-bold`}>
-                  {tech.name}
-                </h3>
-              </motion.div>
+                <div className="tech-name">{tech.name}</div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="relative z-10 py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <motion.h2 
-            className="gradient-text text-4xl md:text-6xl font-black mb-8"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1 }}
-          >
-            READY TO EXPERIENCE THE FUTURE?
-          </motion.h2>
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.2 }}
-          >
-            <a href="/demo" className="btn-sci-fi inline-flex items-center gap-3 text-lg">
-              <ArrowRight className="w-6 h-6" />
-              LAUNCH DEMO NOW
-            </a>
-          </motion.div>
+      <section className="cta-section">
+        <div className="section-container">
+          <h2 className="cta-title">READY TO EXPERIENCE THE FUTURE?</h2>
+          <a href="/demo" className="cta-btn">
+            <ArrowRight className="w-6 h-6" />
+            LAUNCH DEMO NOW
+          </a>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="relative z-10 py-12 px-4 sm:px-6 lg:px-8 border-t border-cyan-500/20">
-        <div className="max-w-7xl mx-auto text-center">
-          <div className="flex items-center justify-center space-x-3 mb-4">
-            <div className="relative">
-              <Brain className="w-6 h-6 text-cyan-400" />
-              <div className="absolute inset-0 w-6 h-6 bg-cyan-400/20 rounded-full animate-pulse"></div>
+      <footer className="footer">
+        <div className="footer-container">
+          <div className="footer-logo">
+            <div className="footer-logo-icon">
+              <Brain />
             </div>
-            <span className="text-lg font-bold text-white">
-              <span className="text-cyan-400">NEURO</span>CHAIN
-            </span>
+            <span>NEUROCHAIN</span>
           </div>
-          <p className="text-gray-400">
+          <p className="footer-text">
             © 2024 Neurochain. Revolutionizing AI transparency through blockchain technology.
           </p>
         </div>
