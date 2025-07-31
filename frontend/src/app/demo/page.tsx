@@ -40,12 +40,17 @@ export default function DemoPage() {
   const [decisions, setDecisions] = useState<Decision[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isRunning, setIsRunning] = useState(false);
+  const [isBrowser, setIsBrowser] = useState(false);
   const [stats, setStats] = useState({
     totalDecisions: 0,
     validatedDecisions: 0,
     averageConfidence: 0,
     totalValidators: 0
   });
+
+  useEffect(() => {
+    setIsBrowser(true);
+  }, []);
 
   const questions = [
     "Should this loan application be approved?",
@@ -181,7 +186,7 @@ export default function DemoPage() {
         </div>
 
         {/* Floating Particles */}
-        {[...Array(15)].map((_, i) => (
+        {isBrowser && [...Array(15)].map((_, i) => (
           <div
             key={i}
             className="absolute w-1 h-1 bg-cyan-400 rounded-full animate-pulse"

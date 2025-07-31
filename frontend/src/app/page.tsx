@@ -20,8 +20,10 @@ import {
 export default function HomePage() {
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isBrowser, setIsBrowser] = useState(false);
 
   useEffect(() => {
+    setIsBrowser(true);
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };
@@ -52,13 +54,13 @@ export default function HomePage() {
         </div>
 
         {/* Floating Particles */}
-        {[...Array(20)].map((_, i) => (
+        {isBrowser && [...Array(20)].map((_, i) => (
           <motion.div
             key={i}
             className="absolute w-1 h-1 bg-cyan-400 rounded-full"
             animate={{
-              x: [0, Math.random() * window.innerWidth],
-              y: [0, Math.random() * window.innerHeight],
+              x: [0, Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000)],
+              y: [0, Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 1000)],
               opacity: [0, 1, 0],
             }}
             transition={{
@@ -75,14 +77,16 @@ export default function HomePage() {
       </div>
 
       {/* Glowing Cursor Effect */}
-      <div 
-        className="fixed w-96 h-96 pointer-events-none z-0"
-        style={{
-          left: mousePosition.x - 192,
-          top: mousePosition.y - 192,
-          background: 'radial-gradient(circle, rgba(120,119,198,0.1) 0%, transparent 70%)',
-        }}
-      />
+      {isBrowser && (
+        <div 
+          className="fixed w-96 h-96 pointer-events-none z-0"
+          style={{
+            left: mousePosition.x - 192,
+            top: mousePosition.y - 192,
+            background: 'radial-gradient(circle, rgba(120,119,198,0.1) 0%, transparent 70%)',
+          }}
+        />
+      )}
 
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-black/30 backdrop-blur-xl border-b border-cyan-500/20">
