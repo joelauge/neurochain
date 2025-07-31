@@ -1,21 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { 
-  Brain, 
-  Shield, 
-  Play,
-  Square,
-  RotateCcw,
-  ExternalLink,
-  Cpu,
-  Network,
-  Database,
-  Eye,
-  Zap,
-  TrendingUp
-} from 'lucide-react';
 import Link from 'next/link';
+import { 
+  Brain, Play, Shield, Square, RotateCcw, ExternalLink,
+  Cpu, Network, Database, Eye, Zap, TrendingUp, ArrowLeft
+} from 'lucide-react';
 
 interface Decision {
   id: string;
@@ -30,38 +20,34 @@ interface Decision {
 interface Transaction {
   id: string;
   decisionId: string;
-  hash: string;
   status: 'pending' | 'confirmed' | 'validated';
   timestamp: Date;
-  validators: number;
+  blockNumber: number;
+  gasUsed: number;
+}
+
+interface Stats {
+  totalDecisions: number;
+  validatedDecisions: number;
+  averageConfidence: number;
+  totalValidators: number;
 }
 
 export default function DemoPage() {
   const [decisions, setDecisions] = useState<Decision[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [isRunning, setIsRunning] = useState(false);
-  const [isBrowser, setIsBrowser] = useState(false);
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<Stats>({
     totalDecisions: 0,
     validatedDecisions: 0,
     averageConfidence: 0,
     totalValidators: 0
   });
+  const [isRunning, setIsRunning] = useState(false);
+  const [isBrowser, setIsBrowser] = useState(false);
 
   useEffect(() => {
     setIsBrowser(true);
   }, []);
-
-  const questions = [
-    "Should this loan application be approved?",
-    "Is this medical diagnosis accurate?",
-    "Should this content be flagged as inappropriate?",
-    "What is the optimal investment strategy?",
-    "Should this autonomous vehicle make an emergency stop?",
-    "Is this legal contract compliant?",
-    "Should this job candidate be hired?",
-    "What is the best treatment plan for this patient?"
-  ];
 
   const generateDecision = (question: string): Decision => {
     const decisions = [
@@ -72,28 +58,87 @@ export default function DemoPage() {
       "FLAG FOR MANUAL REVIEW"
     ];
     
-    const reasoning = [
-      "Based on credit history and income verification",
-      "Risk assessment indicates high probability of default",
-      "Insufficient documentation provided",
-      "All criteria met with strong indicators",
-      "Unusual patterns detected requiring human oversight"
+    const reasonings = [
+      "Analysis indicates moderate risk with acceptable mitigation strategies.",
+      "Risk assessment shows potential for significant negative impact.",
+      "Insufficient data available for confident decision-making.",
+      "All criteria met with high confidence scores across all parameters.",
+      "Complex scenario requiring human expert evaluation."
     ];
 
+    const randomDecision = decisions[Math.floor(Math.random() * decisions.length)];
+    const randomReasoning = reasonings[Math.floor(Math.random() * reasonings.length)];
+    const confidence = Math.floor(Math.random() * 30) + 70; // 70-100%
+    
     return {
       id: Math.random().toString(36).substr(2, 9),
       question,
-      decision: decisions[Math.floor(Math.random() * decisions.length)],
-      reasoning: reasoning[Math.floor(Math.random() * reasoning.length)],
-      confidence: Math.floor(Math.random() * 30) + 70, // 70-100%
+      decision: randomDecision,
+      reasoning: randomReasoning,
+      confidence,
       timestamp: new Date(),
-      blockHash: '0x' + Math.random().toString(16).substr(2, 64)
+      blockHash: '0x' + Math.random().toString(36).substr(2, 16)
     };
   };
 
-  const startDemo = () => {
-    setIsRunning(true);
+  const generateTransaction = (decisionId: string): Transaction => {
+    const statuses: ('pending' | 'confirmed' | 'validated')[] = ['pending', 'confirmed', 'validated'];
+    const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+    
+    return {
+      id: Math.random().toString(36).substr(2, 9),
+      decisionId,
+      status: randomStatus,
+      timestamp: new Date(),
+      blockNumber: Math.floor(Math.random() * 1000000) + 18000000,
+      gasUsed: Math.floor(Math.random() * 200000) + 50000
+    };
   };
+
+  const questions = [
+    "Should this loan application be approved?",
+    "Is this medical diagnosis accurate?",
+    "Should this investment be recommended?",
+    "Is this content appropriate for all audiences?",
+    "Should this legal contract be signed?",
+    "Is this scientific research methodology sound?",
+    "Should this hiring decision be made?",
+    "Is this product safe for consumer use?"
+  ];
+
+  const startDemo = useCallback(() => {
+    setIsRunning(true);
+    const interval = setInterval(() => {
+      if (!isRunning) {
+        clearInterval(interval);
+        return;
+      }
+
+      const randomQuestion = questions[Math.floor(Math.random() * questions.length)];
+      const newDecision = generateDecision(randomQuestion);
+      const newTransaction = generateTransaction(newDecision.id);
+
+      setDecisions(prev => [newDecision, ...prev.slice(0, 9)]);
+      setTransactions(prev => [newTransaction, ...prev.slice(0, 9)]);
+
+      // Update stats
+      setStats(prev => {
+        const newTotal = prev.totalDecisions + 1;
+        const newValidated = prev.validatedDecisions + (newTransaction.status === 'validated' ? 1 : 0);
+        const newAvgConfidence = ((prev.averageConfidence * prev.totalDecisions) + newDecision.confidence) / newTotal;
+        const newValidators = Math.floor(Math.random() * 50) + 100; // Random validator count
+
+        return {
+          totalDecisions: newTotal,
+          validatedDecisions: newValidated,
+          averageConfidence: newAvgConfidence,
+          totalValidators: newValidators
+        };
+      });
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [isRunning]);
 
   const stopDemo = () => {
     setIsRunning(false);
@@ -110,183 +155,134 @@ export default function DemoPage() {
     });
   };
 
-  const processNextDecision = useCallback(() => {
-    if (!isRunning) return;
-
-    const question = questions[Math.floor(Math.random() * questions.length)];
-    const decision = generateDecision(question);
-    
-    setDecisions(prev => [decision, ...prev.slice(0, 9)]);
-    
-    const transaction: Transaction = {
-      id: Math.random().toString(36).substr(2, 9),
-      decisionId: decision.id,
-      hash: decision.blockHash,
-      status: 'pending',
-      timestamp: new Date(),
-      validators: 0
-    };
-    
-    setTransactions(prev => [transaction, ...prev.slice(0, 9)]);
-    
-    // Simulate validation after 3 seconds
-    setTimeout(() => {
-      setTransactions(prev => 
-        prev.map(t => 
-          t.id === transaction.id 
-            ? { ...t, status: 'confirmed', validators: Math.floor(Math.random() * 5) + 1 }
-            : t
-        )
-      );
-    }, 3000);
-    
-    // Simulate final validation after 6 seconds
-    setTimeout(() => {
-      setTransactions(prev => 
-        prev.map(t => 
-          t.id === transaction.id 
-            ? { ...t, status: 'validated', validators: Math.floor(Math.random() * 10) + 5 }
-            : t
-        )
-      );
-      
-      setStats(prev => ({
-        totalDecisions: prev.totalDecisions + 1,
-        validatedDecisions: prev.validatedDecisions + 1,
-        averageConfidence: (prev.averageConfidence * prev.totalDecisions + decision.confidence) / (prev.totalDecisions + 1),
-        totalValidators: prev.totalValidators + Math.floor(Math.random() * 10) + 5
-      }));
-    }, 6000);
-  }, [isRunning, questions]);
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isRunning) {
-      interval = setInterval(processNextDecision, 4000);
-    }
-    return () => clearInterval(interval);
-  }, [isRunning, processNextDecision]);
-
   return (
-    <div className="min-h-screen bg-black relative overflow-hidden">
+    <div className="min-h-screen">
       {/* Animated Background */}
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-purple-900/20 to-cyan-900/20"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.1),transparent_50%)]"></div>
-        
-        {/* Grid Pattern */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `
-              linear-gradient(rgba(120,119,198,0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(120,119,198,0.1) 1px, transparent 1px)
-            `,
-            backgroundSize: '50px 50px'
-          }}></div>
+      <div className="animated-bg"></div>
+
+      {/* Floating Particles */}
+      {isBrowser && (
+        <div className="particles-container">
+          {[...Array(20)].map((_, i) => (
+            <div
+              key={i}
+              className="particle"
+              style={{
+                left: Math.random() * 100 + '%',
+                animationDelay: Math.random() * 20 + 's',
+                animationDuration: Math.random() * 10 + 20 + 's'
+              }}
+            />
+          ))}
         </div>
+      )}
 
-        {/* Floating Particles */}
-        {isBrowser && [...Array(15)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-1 h-1 bg-cyan-400 rounded-full animate-pulse"
-            style={{
-              left: Math.random() * 100 + '%',
-              top: Math.random() * 100 + '%',
-              animationDelay: Math.random() * 2 + 's',
-              animationDuration: Math.random() * 2 + 2 + 's'
-            }}
-          />
-        ))}
-      </div>
+      {/* Navigation */}
+      <nav className="nav-glass">
+        <div className="nav-container">
+          <Link href="/" className="logo">
+            <div className="logo-icon">
+              <Brain />
+            </div>
+            <span>NEUROCHAIN</span>
+          </Link>
+          <div className="flex items-center gap-4">
+            <Link href="/" className="connect-btn secondary">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              BACK TO HOME
+            </Link>
+          </div>
+        </div>
+      </nav>
 
-      <div className="container mx-auto px-4 py-8 relative z-10">
+      <div className="section-container relative z-10 pt-32">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tight">
-            <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
-              NEUROCHAIN
-            </span>
-            <br />
-            <span className="text-white text-4xl md:text-5xl">AI DECISION DEMO</span>
+        <div className="text-center mb-16">
+          <h1 className="hero-title mb-6">
+            AI DECISION DEMO
           </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+          <p className="hero-subtitle max-w-3xl mx-auto">
             Watch AI decisions being made, recorded on the blockchain, and validated by human consensus in real-time.
           </p>
         </div>
 
         {/* Controls */}
-        <div className="flex justify-center gap-6 mb-12">
+        <div className="flex justify-center gap-6 mb-16">
           <button
             onClick={startDemo}
             disabled={isRunning}
-            className="group relative px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 disabled:from-gray-600 disabled:to-gray-700 text-white rounded-xl font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-green-500/25 disabled:hover:scale-100 disabled:hover:shadow-none"
+            className="hero-btn"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-emerald-600 rounded-xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity"></div>
-            <div className="relative flex items-center gap-3">
-              <Play className="w-6 h-6" />
-              <span>START DEMO</span>
-            </div>
+            <Play className="w-5 h-5" />
+            START DEMO
           </button>
           <button
             onClick={stopDemo}
             disabled={!isRunning}
-            className="group relative px-8 py-4 bg-gradient-to-r from-red-600 to-pink-600 disabled:from-gray-600 disabled:to-gray-700 text-white rounded-xl font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-red-500/25 disabled:hover:scale-100 disabled:hover:shadow-none"
+            className="hero-btn secondary"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-pink-600 rounded-xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity"></div>
-            <div className="relative flex items-center gap-3">
-              <Square className="w-6 h-6" />
-              <span>STOP DEMO</span>
-            </div>
+            <Square className="w-5 h-5" />
+            STOP DEMO
           </button>
           <button
             onClick={resetDemo}
-            className="group relative px-8 py-4 bg-gradient-to-r from-gray-600 to-slate-600 text-white rounded-xl font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-gray-500/25"
+            className="hero-btn secondary"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-600 to-slate-600 rounded-xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity"></div>
-            <div className="relative flex items-center gap-3">
-              <RotateCcw className="w-6 h-6" />
-              <span>RESET</span>
-            </div>
+            <RotateCcw className="w-5 h-5" />
+            RESET
           </button>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-          {[
-            { label: "TOTAL DECISIONS", value: stats.totalDecisions, color: "cyan", icon: <Brain className="w-8 h-8" /> },
-            { label: "VALIDATED", value: stats.validatedDecisions, color: "green", icon: <Shield className="w-8 h-8" /> },
-            { label: "AVG CONFIDENCE", value: stats.averageConfidence.toFixed(1) + "%", color: "purple", icon: <TrendingUp className="w-8 h-8" /> },
-            { label: "VALIDATORS", value: stats.totalValidators, color: "yellow", icon: <Network className="w-8 h-8" /> }
-          ].map((stat, index) => (
-            <div key={index} className={`group relative bg-gradient-to-br from-${stat.color}-900/20 to-${stat.color}-600/10 backdrop-blur-xl border border-${stat.color}-500/30 rounded-2xl p-6 text-center hover:border-${stat.color}-400/50 transition-all duration-300 hover:scale-105`}>
-              <div className={`text-${stat.color}-400 mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                {stat.icon}
-              </div>
-              <div className={`text-3xl font-black text-${stat.color}-400 mb-2`}>{stat.value}</div>
-              <div className="text-sm text-gray-300 font-medium tracking-wider">{stat.label}</div>
+        <div className="tech-grid mb-16">
+          <div className="tech-card">
+            <div className="tech-icon">
+              <Brain />
             </div>
-          ))}
+            <div className="tech-name">{stats.totalDecisions}</div>
+            <p className="text-sm text-gray-400 mt-2">TOTAL DECISIONS</p>
+          </div>
+          <div className="tech-card">
+            <div className="tech-icon">
+              <Shield />
+            </div>
+            <div className="tech-name">{stats.validatedDecisions}</div>
+            <p className="text-sm text-gray-400 mt-2">VALIDATED</p>
+          </div>
+          <div className="tech-card">
+            <div className="tech-icon">
+              <TrendingUp />
+            </div>
+            <div className="tech-name">{stats.averageConfidence.toFixed(1)}%</div>
+            <p className="text-sm text-gray-400 mt-2">AVG CONFIDENCE</p>
+          </div>
+          <div className="tech-card">
+            <div className="tech-icon">
+              <Network />
+            </div>
+            <div className="tech-name">{stats.totalValidators}</div>
+            <p className="text-sm text-gray-400 mt-2">VALIDATORS</p>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Content Grid */}
+        <div className="features-grid">
           {/* Recent AI Decisions */}
-          <div className="bg-gradient-to-br from-cyan-900/20 to-cyan-600/10 backdrop-blur-xl border border-cyan-500/30 rounded-2xl p-8">
-            <h2 className="text-3xl font-black mb-6 flex items-center gap-3">
-              <div className="relative">
-                <Brain className="w-8 h-8 text-cyan-400" />
-                <div className="absolute inset-0 w-8 h-8 bg-cyan-400/20 rounded-full animate-pulse"></div>
+          <div className="feature-card">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="feature-icon">
+                <Brain />
               </div>
-              <span className="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
-                RECENT AI DECISIONS
-              </span>
-            </h2>
+              <h2 className="feature-title">RECENT AI DECISIONS</h2>
+            </div>
             <div className="space-y-4 max-h-96 overflow-y-auto">
               {decisions.map((decision) => (
-                <div key={decision.id} className="bg-black/30 backdrop-blur-sm rounded-xl p-4 border border-cyan-500/20 hover:border-cyan-400/40 transition-all duration-300">
+                <div key={decision.id} className="glass p-4 rounded-lg border border-gray-700/50">
                   <div className="flex justify-between items-start mb-3">
-                    <h3 className="font-bold text-sm text-white">{decision.question}</h3>
-                    <span className="text-xs bg-gradient-to-r from-cyan-600 to-purple-600 px-3 py-1 rounded-full font-bold">{decision.confidence}%</span>
+                    <h3 className="text-sm font-semibold text-white">{decision.question}</h3>
+                    <span className="text-xs bg-gradient-to-r from-cyan-600 to-purple-600 px-3 py-1 rounded-full font-bold">
+                      {decision.confidence}%
+                    </span>
                   </div>
                   <p className="text-sm text-cyan-300 mb-2 font-medium">{decision.decision}</p>
                   <p className="text-xs text-gray-400 mb-3">{decision.reasoning}</p>
@@ -296,58 +292,51 @@ export default function DemoPage() {
                   </div>
                 </div>
               ))}
+              {decisions.length === 0 && (
+                <p className="text-gray-400 text-center py-8">No decisions yet. Start the demo to see AI decisions in action.</p>
+              )}
             </div>
           </div>
 
           {/* Blockchain Transactions */}
-          <div className="bg-gradient-to-br from-purple-900/20 to-purple-600/10 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-8">
-            <h2 className="text-3xl font-black mb-6 flex items-center gap-3">
-              <div className="relative">
-                <Network className="w-8 h-8 text-purple-400" />
-                <div className="absolute inset-0 w-8 h-8 bg-purple-400/20 rounded-full animate-pulse"></div>
+          <div className="feature-card">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="feature-icon">
+                <Network />
               </div>
-              <span className="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
-                BLOCKCHAIN TRANSACTIONS
-              </span>
-            </h2>
+              <h2 className="feature-title">BLOCKCHAIN TRANSACTIONS</h2>
+            </div>
             <div className="space-y-4 max-h-96 overflow-y-auto">
-              {transactions.map((tx) => (
-                <div key={tx.id} className="bg-black/30 backdrop-blur-sm rounded-xl p-4 border border-purple-500/20 hover:border-purple-400/40 transition-all duration-300">
+              {transactions.map((transaction) => (
+                <div key={transaction.id} className="glass p-4 rounded-lg border border-gray-700/50">
                   <div className="flex justify-between items-start mb-3">
-                    <span className="font-mono text-sm text-purple-300">{tx.hash.substring(0, 12)}...</span>
+                    <h3 className="text-sm font-semibold text-white">Decision #{transaction.decisionId.substring(0, 6)}</h3>
                     <span className={`text-xs px-3 py-1 rounded-full font-bold ${
-                      tx.status === 'validated' ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white' :
-                      tx.status === 'confirmed' ? 'bg-gradient-to-r from-yellow-600 to-orange-600 text-white' : 
-                      'bg-gradient-to-r from-gray-600 to-slate-600 text-white'
+                      transaction.status === 'validated' ? 'bg-green-600/20 text-green-400' :
+                      transaction.status === 'confirmed' ? 'bg-blue-600/20 text-blue-400' :
+                      'bg-yellow-600/20 text-yellow-400'
                     }`}>
-                      {tx.status.toUpperCase()}
+                      {transaction.status.toUpperCase()}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center text-xs text-gray-400">
-                    <span className="flex items-center gap-1">
-                      <Network className="w-3 h-3" />
-                      {tx.validators} validators
-                    </span>
-                    <span>{tx.timestamp.toLocaleTimeString()}</span>
+                  <div className="grid grid-cols-2 gap-4 text-xs text-gray-400">
+                    <div>
+                      <span className="text-gray-500">Block:</span> #{transaction.blockNumber}
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Gas:</span> {transaction.gasUsed.toLocaleString()}
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-500 mt-2">
+                    {transaction.timestamp.toLocaleTimeString()}
                   </div>
                 </div>
               ))}
+              {transactions.length === 0 && (
+                <p className="text-gray-400 text-center py-8">No transactions yet. Start the demo to see blockchain activity.</p>
+              )}
             </div>
           </div>
-        </div>
-
-        {/* Back to Home */}
-        <div className="text-center mt-12">
-          <Link 
-            href="/" 
-            className="group relative inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-cyan-600 to-purple-600 text-white rounded-xl font-bold text-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/25"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity"></div>
-            <div className="relative flex items-center gap-3">
-              <ExternalLink className="w-6 h-6" />
-              <span>BACK TO HOME</span>
-            </div>
-          </Link>
         </div>
       </div>
     </div>
