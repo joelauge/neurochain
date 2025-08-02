@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
+  // Remove output: 'export' for development
+  // This will be added back for production builds
   trailingSlash: true,
   images: {
     unoptimized: true,

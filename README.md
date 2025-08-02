@@ -8,8 +8,11 @@ Neurochain addresses the critical need for transparency and accountability in AI
 
 ## Key Features
 
-- **Transparent AI Decisions**: Every AI decision is recorded on a public blockchain
-- **Decentralized Validation**: Human consensus validates AI decisions through side chains
+- **Transparent AI Decisions**: Every AI decision is recorded on a public blockchain with full traceability
+- **Real-time Demo**: Interactive demo showing AI decisions and blockchain transactions in real-time
+- **Sophisticated AI Engine**: Category-aware decision making with ethical considerations
+- **Web3 Integration**: MetaMask wallet connection for blockchain interactions
+- **Decentralized Validation**: Human consensus validates AI decisions through smart contracts
 - **Smart Contract Governance**: Automated oversight and validation rules
 - **High Performance**: Layer-2 solutions and sharding for scalability
 - **Open Source**: Fully transparent and community-driven development
@@ -33,32 +36,62 @@ Neurochain addresses the critical need for transparency and accountability in AI
 
 ## Quick Start
 
+### Option 1: Automated Setup (Recommended)
+
 1. **Clone the repository**
    ```bash
    git clone https://github.com/yourusername/neurochain.git
    cd neurochain
    ```
 
-2. **Start the frontend**
+2. **Run the setup script**
+   ```bash
+   ./scripts/setup.sh
+   ```
+
+3. **Start the services**
+   ```bash
+   # Terminal 1: Start backend
+   cd backend
+   source venv/bin/activate
+   uvicorn main:app --reload
+   
+   # Terminal 2: Start frontend
+   cd frontend
+   npm run dev
+   ```
+
+### Option 2: Manual Setup
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/neurochain.git
+   cd neurochain
+   ```
+
+2. **Set up frontend**
    ```bash
    cd frontend
    npm install
    npm run dev
    ```
 
-3. **Start the backend**
+3. **Set up backend**
    ```bash
    cd backend
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
    pip install -r requirements.txt
    uvicorn main:app --reload
    ```
 
-4. **Deploy smart contracts**
+4. **Set up blockchain (optional)**
    ```bash
    cd blockchain
    npm install
    npx hardhat compile
-   npx hardhat deploy --network sepolia
+   # Update .env with your values
+   npx hardhat run scripts/deploy.ts --network sepolia
    ```
 
 ## Project Structure
@@ -76,6 +109,13 @@ neurochain/
 ## Live Demo
 
 Visit [neurocha.in](https://neurocha.in) to see the live prototype and learn more about the project.
+
+### Local Demo
+
+1. Start the application using the setup instructions above
+2. Visit `http://localhost:3000/demo` to see the interactive AI decision demo
+3. Watch real AI decisions being made and recorded on the blockchain
+4. Connect your MetaMask wallet to interact with the blockchain
 
 ## Contributing
 

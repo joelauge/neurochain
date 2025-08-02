@@ -4,95 +4,197 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { 
   Brain, Play, Shield, Square, RotateCcw, ExternalLink,
-  Cpu, Network, Database, Eye, Zap, TrendingUp, ArrowLeft
+  Cpu, Network, Database, Eye, Zap, TrendingUp, ArrowLeft,
+  AlertCircle, Loader2, FileText, Hash, AlertTriangle, CheckCircle
 } from 'lucide-react';
+import { API_CONFIG } from '@/config/api';
+
+interface AIReasoning {
+  model_id: string;
+  model_version: string;
+  timestamp: string;
+  input: {
+    prompt: string;
+    context: string;
+    parameters: {
+      temperature: number;
+      max_tokens: number;
+    };
+  };
+  reasoning_process: {
+    thought_chain: string[];
+    intermediate_decisions: string[];
+    confidence_factors: string[];
+  };
+  output: {
+    decision: string;
+    confidence: number;
+    explanation: string;
+  };
+  metadata: {
+    session_id: string;
+    user_id: string;
+    request_id: string;
+  };
+}
 
 interface Decision {
   id: string;
+  timestamp: string;
   question: string;
-  decision: string;
   reasoning: string;
+  decision: string;
   confidence: number;
-  timestamp: Date;
-  blockHash: string;
+  block_hash: string;
+  status: string;
+  category: string;
+  ipfs_hash?: string;
+  ai_reasoning?: AIReasoning;
 }
 
-interface Transaction {
+interface BlockchainTransaction {
   id: string;
   decisionId: string;
-  status: 'pending' | 'confirmed' | 'validated';
+  status: 'pending' | 'confirmed' | 'validated' | 'anomaly_detected';
   timestamp: Date;
   blockNumber: number;
   gasUsed: number;
+  ipfsHash: string;
+  anomalyScore?: number;
+  anomalyType?: string;
 }
 
 interface Stats {
-  totalDecisions: number;
-  validatedDecisions: number;
-  averageConfidence: number;
-  totalValidators: number;
+  total_decisions: number;
+  validated_decisions: number;
+  pending_decisions: number;
+  average_confidence: number;
+  system_status: string;
+  ai_models_monitored: number;
+  anomalies_detected: number;
 }
 
 export default function DemoPage() {
   const [decisions, setDecisions] = useState<Decision[]>([]);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [transactions, setTransactions] = useState<BlockchainTransaction[]>([]);
   const [stats, setStats] = useState<Stats>({
-    totalDecisions: 0,
-    validatedDecisions: 0,
-    averageConfidence: 0,
-    totalValidators: 0
+    total_decisions: 0,
+    validated_decisions: 0,
+    pending_decisions: 0,
+    average_confidence: 0,
+    system_status: 'healthy',
+    ai_models_monitored: 3,
+    anomalies_detected: 0
   });
   const [isRunning, setIsRunning] = useState(false);
   const [isBrowser, setIsBrowser] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
+  const [selectedDecision, setSelectedDecision] = useState<Decision | null>(null);
 
   useEffect(() => {
     setIsBrowser(true);
+    // Load initial data
+    fetchStats();
+    fetchDecisions();
   }, []);
 
-  const generateDecision = (question: string): Decision => {
-    const decisions = [
-      "APPROVE WITH CONDITIONS",
-      "REJECT DUE TO RISK FACTORS",
-      "REQUIRE ADDITIONAL DOCUMENTATION",
-      "APPROVE IMMEDIATELY",
-      "FLAG FOR MANUAL REVIEW"
-    ];
-    
-    const reasonings = [
-      "Analysis indicates moderate risk with acceptable mitigation strategies.",
-      "Risk assessment shows potential for significant negative impact.",
-      "Insufficient data available for confident decision-making.",
-      "All criteria met with high confidence scores across all parameters.",
-      "Complex scenario requiring human expert evaluation."
-    ];
-
-    const randomDecision = decisions[Math.floor(Math.random() * decisions.length)];
-    const randomReasoning = reasonings[Math.floor(Math.random() * reasonings.length)];
-    const confidence = Math.floor(Math.random() * 30) + 70; // 70-100%
-    
-    return {
-      id: Math.random().toString(36).substr(2, 9),
-      question,
-      decision: randomDecision,
-      reasoning: randomReasoning,
-      confidence,
-      timestamp: new Date(),
-      blockHash: '0x' + Math.random().toString(36).substr(2, 16)
-    };
+  const fetchStats = async () => {
+    try {
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.STATS}`);
+      if (!response.ok) throw new Error('Failed to fetch stats');
+      const data = await response.json();
+      setStats(data);
+    } catch (err) {
+      console.error('Error fetching stats:', err);
+      setError('Failed to load system statistics');
+    }
   };
 
-  const generateTransaction = (decisionId: string): Transaction => {
-    const statuses: ('pending' | 'confirmed' | 'validated')[] = ['pending', 'confirmed', 'validated'];
-    const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
-    
-    return {
-      id: Math.random().toString(36).substr(2, 9),
-      decisionId,
-      status: randomStatus,
-      timestamp: new Date(),
-      blockNumber: Math.floor(Math.random() * 1000000) + 18000000,
-      gasUsed: Math.floor(Math.random() * 200000) + 50000
-    };
+  const fetchDecisions = async () => {
+    try {
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.DECISIONS}?limit=10`);
+      if (!response.ok) throw new Error('Failed to fetch decisions');
+      const data = await response.json();
+      setDecisions(data);
+    } catch (err) {
+      console.error('Error fetching decisions:', err);
+      setError('Failed to load decisions');
+    }
+  };
+
+  const createDecision = async (question: string) => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.DECISIONS}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ question }),
+      });
+      
+      if (!response.ok) throw new Error('Failed to create decision');
+      const data = await response.json();
+      
+      // Add new decision to the list
+      setDecisions(prev => [data.decision, ...prev.slice(0, 9)]);
+      
+      // Create a mock blockchain transaction with IPFS hash
+      const ipfsHash = `Qm${Math.random().toString(36).substr(2, 44)}`;
+      const anomalyScore = Math.random() > 0.9 ? Math.random() * 100 : 0;
+      const anomalyType = anomalyScore > 0 ? ['behavioral_drift', 'confidence_anomaly', 'reasoning_inconsistency'][Math.floor(Math.random() * 3)] : undefined;
+      
+      const newTransaction: BlockchainTransaction = {
+        id: Math.random().toString(36).substr(2, 9),
+        decisionId: data.decision.id,
+        status: anomalyScore > 70 ? 'anomaly_detected' : 'pending',
+        timestamp: new Date(),
+        blockNumber: Math.floor(Math.random() * 1000000) + 18000000,
+        gasUsed: Math.floor(Math.random() * 200000) + 50000,
+        ipfsHash,
+        anomalyScore: anomalyScore > 0 ? Math.round(anomalyScore) : undefined,
+        anomalyType
+      };
+      
+      setTransactions(prev => [newTransaction, ...prev.slice(0, 9)]);
+      
+      // Update stats
+      await fetchStats();
+      
+    } catch (err) {
+      console.error('Error creating decision:', err);
+      setError('Failed to create decision');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const validateDecision = async (decisionId: string) => {
+    try {
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.DECISIONS}/${decisionId}/validate`, {
+        method: 'POST',
+      });
+      
+      if (!response.ok) throw new Error('Failed to validate decision');
+      
+      // Update the transaction status
+      setTransactions(prev => 
+        prev.map(tx => 
+          tx.decisionId === decisionId 
+            ? { ...tx, status: 'validated' as const }
+            : tx
+        )
+      );
+      
+      // Update stats
+      await fetchStats();
+      
+    } catch (err) {
+      console.error('Error validating decision:', err);
+      setError('Failed to validate decision');
+    }
   };
 
   const questions = [
@@ -106,54 +208,75 @@ export default function DemoPage() {
     "Is this product safe for consumer use?"
   ];
 
+  const aiModels = [
+    { id: "gpt-4", name: "OpenAI GPT-4", version: "2024-01-01" },
+    { id: "claude-3", name: "Anthropic Claude-3", version: "2024-01-01" },
+    { id: "custom-model", name: "Custom AI Model", version: "1.0.0" }
+  ];
+
   const startDemo = useCallback(() => {
     setIsRunning(true);
-    const interval = setInterval(() => {
+    setError(null);
+    
+    // Create initial decision
+    const randomQuestion = questions[Math.floor(Math.random() * questions.length)];
+    createDecision(randomQuestion);
+    
+    // Set up polling interval
+    const interval = setInterval(async () => {
       if (!isRunning) {
         clearInterval(interval);
         return;
       }
 
+      // Create a new decision every 5 seconds
       const randomQuestion = questions[Math.floor(Math.random() * questions.length)];
-      const newDecision = generateDecision(randomQuestion);
-      const newTransaction = generateTransaction(newDecision.id);
+      await createDecision(randomQuestion);
+      
+      // Randomly validate some decisions
+      if (Math.random() > 0.7 && decisions.length > 0) {
+        const randomDecision = decisions[Math.floor(Math.random() * decisions.length)];
+        await validateDecision(randomDecision.id);
+      }
+      
+    }, 5000);
 
-      setDecisions(prev => [newDecision, ...prev.slice(0, 9)]);
-      setTransactions(prev => [newTransaction, ...prev.slice(0, 9)]);
-
-      // Update stats
-      setStats(prev => {
-        const newTotal = prev.totalDecisions + 1;
-        const newValidated = prev.validatedDecisions + (newTransaction.status === 'validated' ? 1 : 0);
-        const newAvgConfidence = ((prev.averageConfidence * prev.totalDecisions) + newDecision.confidence) / newTotal;
-        const newValidators = Math.floor(Math.random() * 50) + 100; // Random validator count
-
-        return {
-          totalDecisions: newTotal,
-          validatedDecisions: newValidated,
-          averageConfidence: newAvgConfidence,
-          totalValidators: newValidators
-        };
-      });
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [isRunning]);
+    setPollingInterval(interval);
+  }, [isRunning, decisions]);
 
   const stopDemo = () => {
     setIsRunning(false);
+    if (pollingInterval) {
+      clearInterval(pollingInterval);
+      setPollingInterval(null);
+    }
   };
 
   const resetDemo = () => {
+    stopDemo();
     setDecisions([]);
     setTransactions([]);
     setStats({
-      totalDecisions: 0,
-      validatedDecisions: 0,
-      averageConfidence: 0,
-      totalValidators: 0
+      total_decisions: 0,
+      validated_decisions: 0,
+      pending_decisions: 0,
+      average_confidence: 0,
+      system_status: 'healthy',
+      ai_models_monitored: 3,
+      anomalies_detected: 0
     });
+    setError(null);
+    setSelectedDecision(null);
   };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+      }
+    };
+  }, [pollingInterval]);
 
   return (
     <div className="min-h-screen">
@@ -177,44 +300,45 @@ export default function DemoPage() {
         </div>
       )}
 
-      {/* Navigation */}
-      <nav className="nav-glass">
-        <div className="nav-container">
-          <Link href="/" className="logo">
-            <div className="logo-icon">
-              <Brain />
-            </div>
-            <span>NEUROCHAIN</span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link href="/" className="connect-btn secondary">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              BACK TO HOME
-            </Link>
-          </div>
-        </div>
-      </nav>
-
       <div className="section-container relative z-10 pt-32">
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="hero-title mb-6">
-            AI DECISION DEMO
+            AI REASONING MONITORING DEMO
           </h1>
-          <p className="hero-subtitle max-w-3xl mx-auto">
-            Watch AI decisions being made, recorded on the blockchain, and validated by human consensus in real-time.
+          <p className="hero-subtitle max-w-4xl mx-auto">
+            Watch AI models being monitored in real-time. See their reasoning processes captured, stored on IPFS, 
+            and recorded on the blockchain for transparent oversight and anomaly detection.
           </p>
         </div>
+
+        {/* Error Display */}
+        {error && (
+          <div className="mb-8 p-4 bg-red-500/20 border border-red-500/50 rounded-lg flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-red-400" />
+            <span className="text-red-400">{error}</span>
+            <button 
+              onClick={() => setError(null)}
+              className="ml-auto text-red-400 hover:text-red-300"
+            >
+              ×
+            </button>
+          </div>
+        )}
 
         {/* Controls */}
         <div className="flex justify-center gap-6 mb-16">
           <button
             onClick={startDemo}
-            disabled={isRunning}
+            disabled={isRunning || isLoading}
             className="hero-btn"
           >
-            <Play className="w-5 h-5" />
-            START DEMO
+            {isLoading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <Play className="w-5 h-5" />
+            )}
+            {isLoading ? 'MONITORING...' : 'START MONITORING'}
           </button>
           <button
             onClick={stopDemo}
@@ -222,7 +346,7 @@ export default function DemoPage() {
             className="hero-btn secondary"
           >
             <Square className="w-5 h-5" />
-            STOP DEMO
+            STOP MONITORING
           </button>
           <button
             onClick={resetDemo}
@@ -239,45 +363,70 @@ export default function DemoPage() {
             <div className="tech-icon">
               <Brain />
             </div>
-            <div className="tech-name">{stats.totalDecisions}</div>
-            <p className="text-sm text-gray-400 mt-2">TOTAL DECISIONS</p>
+            <div className="tech-name">{stats.total_decisions}</div>
+            <p className="text-sm text-gray-400 mt-2">AI DECISIONS MONITORED</p>
           </div>
           <div className="tech-card">
             <div className="tech-icon">
               <Shield />
             </div>
-            <div className="tech-name">{stats.validatedDecisions}</div>
+            <div className="tech-name">{stats.validated_decisions}</div>
             <p className="text-sm text-gray-400 mt-2">VALIDATED</p>
           </div>
           <div className="tech-card">
             <div className="tech-icon">
-              <TrendingUp />
+              <AlertTriangle />
             </div>
-            <div className="tech-name">{stats.averageConfidence.toFixed(1)}%</div>
-            <p className="text-sm text-gray-400 mt-2">AVG CONFIDENCE</p>
+            <div className="tech-name">{stats.anomalies_detected}</div>
+            <p className="text-sm text-gray-400 mt-2">ANOMALIES DETECTED</p>
           </div>
           <div className="tech-card">
             <div className="tech-icon">
-              <Network />
+              <Cpu />
             </div>
-            <div className="tech-name">{stats.totalValidators}</div>
-            <p className="text-sm text-gray-400 mt-2">VALIDATORS</p>
+            <div className="tech-name">{stats.ai_models_monitored}</div>
+            <p className="text-sm text-gray-400 mt-2">AI MODELS MONITORED</p>
+          </div>
+        </div>
+
+        {/* AI Models Being Monitored */}
+        <div className="mb-16">
+          <h2 className="section-title mb-8">AI MODELS UNDER MONITORING</h2>
+          <div className="tech-grid">
+            {aiModels.map((model) => (
+              <div key={model.id} className="tech-card">
+                <div className="tech-icon">
+                  <Cpu />
+                </div>
+                <div className="tech-name">{model.name}</div>
+                <p className="text-sm text-gray-400 mt-2">v{model.version}</p>
+                <div className="mt-2">
+                  <span className="text-xs bg-green-600/20 text-green-400 px-2 py-1 rounded">
+                    MONITORING ACTIVE
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
         {/* Content Grid */}
         <div className="features-grid">
-          {/* Recent AI Decisions */}
+          {/* AI Reasoning Monitoring */}
           <div className="feature-card">
             <div className="flex items-center gap-3 mb-6">
               <div className="feature-icon">
                 <Brain />
               </div>
-              <h2 className="feature-title">RECENT AI DECISIONS</h2>
+              <h2 className="feature-title">AI REASONING MONITORING</h2>
             </div>
             <div className="space-y-4 max-h-96 overflow-y-auto">
               {decisions.map((decision) => (
-                <div key={decision.id} className="glass p-4 rounded-lg border border-gray-700/50">
+                <div 
+                  key={decision.id} 
+                  className="glass p-4 rounded-lg border border-gray-700/50 cursor-pointer hover:border-cyan-500/50 transition-colors"
+                  onClick={() => setSelectedDecision(decision)}
+                >
                   <div className="flex justify-between items-start mb-3">
                     <h3 className="text-sm font-semibold text-white">{decision.question}</h3>
                     <span className="text-xs bg-gradient-to-r from-cyan-600 to-purple-600 px-3 py-1 rounded-full font-bold">
@@ -285,15 +434,31 @@ export default function DemoPage() {
                     </span>
                   </div>
                   <p className="text-sm text-cyan-300 mb-2 font-medium">{decision.decision}</p>
-                  <p className="text-xs text-gray-400 mb-3">{decision.reasoning}</p>
+                  <p className="text-xs text-gray-400 mb-3 line-clamp-2">{decision.reasoning}</p>
                   <div className="flex justify-between items-center text-xs text-gray-500">
-                    <span>{decision.timestamp.toLocaleTimeString()}</span>
-                    <span className="font-mono text-cyan-400">{decision.blockHash.substring(0, 8)}...</span>
+                    <span>{new Date(decision.timestamp).toLocaleTimeString()}</span>
+                    <div className="flex items-center gap-2">
+                      <Hash className="w-3 h-3" />
+                      <span className="font-mono text-cyan-400">{decision.block_hash.substring(0, 8)}...</span>
+                    </div>
+                  </div>
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className={`text-xs px-2 py-1 rounded ${
+                      decision.status === 'validated' ? 'bg-green-600/20 text-green-400' :
+                      'bg-yellow-600/20 text-yellow-400'
+                    }`}>
+                      {decision.status.toUpperCase()}
+                    </span>
+                    {decision.ipfs_hash && (
+                      <span className="text-xs bg-blue-600/20 text-blue-400 px-2 py-1 rounded">
+                        IPFS: {decision.ipfs_hash.substring(0, 8)}...
+                      </span>
+                    )}
                   </div>
                 </div>
               ))}
               {decisions.length === 0 && (
-                <p className="text-gray-400 text-center py-8">No decisions yet. Start the demo to see AI decisions in action.</p>
+                <p className="text-gray-400 text-center py-8">No AI decisions monitored yet. Start monitoring to see AI reasoning in action.</p>
               )}
             </div>
           </div>
@@ -304,7 +469,7 @@ export default function DemoPage() {
               <div className="feature-icon">
                 <Network />
               </div>
-              <h2 className="feature-title">BLOCKCHAIN TRANSACTIONS</h2>
+              <h2 className="feature-title">BLOCKCHAIN RECORDING</h2>
             </div>
             <div className="space-y-4 max-h-96 overflow-y-auto">
               {transactions.map((transaction) => (
@@ -313,13 +478,14 @@ export default function DemoPage() {
                     <h3 className="text-sm font-semibold text-white">Decision #{transaction.decisionId.substring(0, 6)}</h3>
                     <span className={`text-xs px-3 py-1 rounded-full font-bold ${
                       transaction.status === 'validated' ? 'bg-green-600/20 text-green-400' :
+                      transaction.status === 'anomaly_detected' ? 'bg-red-600/20 text-red-400' :
                       transaction.status === 'confirmed' ? 'bg-blue-600/20 text-blue-400' :
                       'bg-yellow-600/20 text-yellow-400'
                     }`}>
                       {transaction.status.toUpperCase()}
                     </span>
                   </div>
-                  <div className="grid grid-cols-2 gap-4 text-xs text-gray-400">
+                  <div className="grid grid-cols-2 gap-4 text-xs text-gray-400 mb-2">
                     <div>
                       <span className="text-gray-500">Block:</span> #{transaction.blockNumber}
                     </div>
@@ -327,17 +493,82 @@ export default function DemoPage() {
                       <span className="text-gray-500">Gas:</span> {transaction.gasUsed.toLocaleString()}
                     </div>
                   </div>
+                  <div className="text-xs text-gray-400 mb-2">
+                    <span className="text-gray-500">IPFS:</span> {transaction.ipfsHash.substring(0, 12)}...
+                  </div>
+                  {transaction.anomalyScore && (
+                    <div className="text-xs bg-red-600/20 text-red-400 px-2 py-1 rounded">
+                      Anomaly Score: {transaction.anomalyScore}% ({transaction.anomalyType})
+                    </div>
+                  )}
                   <div className="text-xs text-gray-500 mt-2">
                     {transaction.timestamp.toLocaleTimeString()}
                   </div>
                 </div>
               ))}
               {transactions.length === 0 && (
-                <p className="text-gray-400 text-center py-8">No transactions yet. Start the demo to see blockchain activity.</p>
+                <p className="text-gray-400 text-center py-8">No blockchain transactions yet. Start monitoring to see AI reasoning recorded on-chain.</p>
               )}
             </div>
           </div>
         </div>
+
+        {/* AI Reasoning Detail Modal */}
+        {selectedDecision && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="glass max-w-2xl w-full max-h-[80vh] overflow-y-auto p-6 rounded-lg">
+              <div className="flex justify-between items-start mb-4">
+                <h2 className="text-xl font-bold text-white">AI Reasoning Details</h2>
+                <button 
+                  onClick={() => setSelectedDecision(null)}
+                  className="text-gray-400 hover:text-white"
+                >
+                  ×
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-sm font-semibold text-cyan-300 mb-2">Question</h3>
+                  <p className="text-white">{selectedDecision.question}</p>
+                </div>
+                
+                <div>
+                  <h3 className="text-sm font-semibold text-cyan-300 mb-2">AI Decision</h3>
+                  <p className="text-white font-medium">{selectedDecision.decision}</p>
+                </div>
+                
+                <div>
+                  <h3 className="text-sm font-semibold text-cyan-300 mb-2">Reasoning Process</h3>
+                  <p className="text-gray-300 text-sm">{selectedDecision.reasoning}</p>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <h3 className="text-sm font-semibold text-cyan-300 mb-2">Confidence</h3>
+                    <p className="text-white">{selectedDecision.confidence}%</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-cyan-300 mb-2">Category</h3>
+                    <p className="text-white capitalize">{selectedDecision.category}</p>
+                  </div>
+                </div>
+                
+                <div>
+                  <h3 className="text-sm font-semibold text-cyan-300 mb-2">Blockchain Hash</h3>
+                  <p className="font-mono text-sm text-cyan-400">{selectedDecision.block_hash}</p>
+                </div>
+                
+                {selectedDecision.ipfs_hash && (
+                  <div>
+                    <h3 className="text-sm font-semibold text-cyan-300 mb-2">IPFS Hash</h3>
+                    <p className="font-mono text-sm text-blue-400">{selectedDecision.ipfs_hash}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

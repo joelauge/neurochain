@@ -48,6 +48,7 @@ class Decision(BaseModel):
     confidence: float
     block_hash: str
     status: str
+    category: str
 
 class DecisionResponse(BaseModel):
     decision: Decision
@@ -57,52 +58,250 @@ class DecisionResponse(BaseModel):
 class AIDecisionEngine:
     def __init__(self):
         self.ethical_guidelines = [
-            "Ensure decisions align with human values",
-            "Consider potential harm to stakeholders",
-            "Maintain transparency in reasoning",
-            "Respect privacy and data protection",
-            "Promote fairness and non-discrimination"
+            "Ensure decisions align with human values and well-being",
+            "Consider potential harm to stakeholders and society",
+            "Maintain transparency in reasoning and decision process",
+            "Respect privacy and data protection principles",
+            "Promote fairness and non-discrimination",
+            "Consider long-term consequences and sustainability",
+            "Prioritize safety and risk mitigation",
+            "Ensure accountability and traceability"
         ]
+        
+        # Decision categories and their specific considerations
+        self.decision_categories = {
+            "financial": {
+                "keywords": ["loan", "credit", "investment", "financial", "money", "payment", "transaction"],
+                "considerations": ["Risk assessment", "Regulatory compliance", "Creditworthiness", "Market conditions"],
+                "confidence_factors": ["Data completeness", "Historical patterns", "Regulatory clarity"]
+            },
+            "medical": {
+                "keywords": ["medical", "diagnosis", "treatment", "health", "patient", "symptom", "disease"],
+                "considerations": ["Medical evidence", "Patient safety", "Treatment efficacy", "Ethical guidelines"],
+                "confidence_factors": ["Test results", "Medical history", "Expert consensus"]
+            },
+            "legal": {
+                "keywords": ["legal", "contract", "law", "compliance", "regulation", "court", "judgment"],
+                "considerations": ["Legal precedent", "Regulatory requirements", "Risk assessment", "Due diligence"],
+                "confidence_factors": ["Legal clarity", "Precedent strength", "Regulatory certainty"]
+            },
+            "content": {
+                "keywords": ["content", "media", "video", "text", "image", "appropriate", "moderation"],
+                "considerations": ["Community guidelines", "Safety standards", "Cultural sensitivity", "Age appropriateness"],
+                "confidence_factors": ["Content clarity", "Guideline specificity", "Context availability"]
+            },
+            "hiring": {
+                "keywords": ["hiring", "recruitment", "candidate", "job", "employment", "interview"],
+                "considerations": ["Qualifications match", "Cultural fit", "Legal compliance", "Diversity goals"],
+                "confidence_factors": ["Resume completeness", "Interview quality", "Reference checks"]
+            },
+            "safety": {
+                "keywords": ["safety", "security", "risk", "danger", "hazard", "protection"],
+                "considerations": ["Risk assessment", "Safety protocols", "Emergency procedures", "Compliance standards"],
+                "confidence_factors": ["Risk data quality", "Protocol clarity", "Compliance status"]
+            }
+        }
+    
+    def categorize_question(self, question: str) -> str:
+        """Categorize the question based on keywords"""
+        question_lower = question.lower()
+        
+        for category, config in self.decision_categories.items():
+            if any(keyword in question_lower for keyword in config["keywords"]):
+                return category
+        
+        return "general"
     
     def analyze_question(self, question: str, context: str = "") -> dict:
         """Analyze a question and provide a decision with reasoning"""
         
-        # Simple decision logic (in production, this would use a more sophisticated AI model)
+        category = self.categorize_question(question)
         question_lower = question.lower()
         
-        # Decision patterns
-        approval_keywords = ["approve", "accept", "recommend", "allow", "grant", "positive"]
-        rejection_keywords = ["reject", "deny", "refuse", "block", "negative", "suspicious"]
+        # Decision patterns with more nuanced analysis
+        approval_keywords = ["approve", "accept", "recommend", "allow", "grant", "positive", "proceed", "continue"]
+        rejection_keywords = ["reject", "deny", "refuse", "block", "negative", "suspicious", "stop", "halt"]
+        conditional_keywords = ["condition", "review", "additional", "further", "pending"]
         
         approval_score = sum(1 for keyword in approval_keywords if keyword in question_lower)
         rejection_score = sum(1 for keyword in rejection_keywords if keyword in question_lower)
+        conditional_score = sum(1 for keyword in conditional_keywords if keyword in question_lower)
         
-        # Context-based decision making
-        if "loan" in question_lower or "credit" in question_lower:
-            decision = "APPROVED" if approval_score > rejection_score else "REJECTED"
-            reasoning = f"Financial decision analysis: {question}. Considering creditworthiness, risk assessment, and regulatory compliance."
-        elif "medical" in question_lower or "diagnosis" in question_lower:
-            decision = "APPROVED" if approval_score > rejection_score else "REJECTED"
-            reasoning = f"Medical decision analysis: {question}. Evaluating symptoms, medical history, and treatment protocols."
-        elif "investment" in question_lower or "financial" in question_lower:
-            decision = "APPROVED" if approval_score > rejection_score else "REJECTED"
-            reasoning = f"Investment decision analysis: {question}. Assessing market conditions, risk factors, and client objectives."
+        # Category-specific decision logic
+        if category in self.decision_categories:
+            config = self.decision_categories[category]
+            considerations = config["considerations"]
+            confidence_factors = config["confidence_factors"]
+            
+            # Enhanced decision logic based on category
+            if category == "financial":
+                decision, reasoning = self._analyze_financial_decision(question, approval_score, rejection_score, conditional_score)
+            elif category == "medical":
+                decision, reasoning = self._analyze_medical_decision(question, approval_score, rejection_score, conditional_score)
+            elif category == "legal":
+                decision, reasoning = self._analyze_legal_decision(question, approval_score, rejection_score, conditional_score)
+            elif category == "content":
+                decision, reasoning = self._analyze_content_decision(question, approval_score, rejection_score, conditional_score)
+            elif category == "hiring":
+                decision, reasoning = self._analyze_hiring_decision(question, approval_score, rejection_score, conditional_score)
+            elif category == "safety":
+                decision, reasoning = self._analyze_safety_decision(question, approval_score, rejection_score, conditional_score)
+            else:
+                decision, reasoning = self._analyze_general_decision(question, approval_score, rejection_score, conditional_score)
         else:
-            decision = "APPROVED" if approval_score > rejection_score else "REJECTED"
-            reasoning = f"General decision analysis: {question}. Applying ethical guidelines and best practices."
+            decision, reasoning = self._analyze_general_decision(question, approval_score, rejection_score, conditional_score)
+            considerations = ["General best practices", "Risk assessment", "Stakeholder impact"]
+            confidence_factors = ["Information completeness", "Decision clarity", "Context availability"]
         
         # Add ethical considerations
-        reasoning += f" Ethical considerations: {', '.join(self.ethical_guidelines[:2])}."
+        ethical_considerations = self._get_ethical_considerations(category)
+        reasoning += f" Ethical considerations: {', '.join(ethical_considerations)}."
         
-        # Calculate confidence based on decision clarity
-        confidence = 70 + (abs(approval_score - rejection_score) * 10)
-        confidence = min(confidence, 95)
+        # Calculate confidence based on multiple factors
+        confidence = self._calculate_confidence(approval_score, rejection_score, conditional_score, category, question)
         
         return {
             "decision": decision,
             "reasoning": reasoning,
-            "confidence": confidence
+            "confidence": confidence,
+            "category": category
         }
+    
+    def _analyze_financial_decision(self, question: str, approval_score: int, rejection_score: int, conditional_score: int) -> tuple:
+        if conditional_score > 0 or abs(approval_score - rejection_score) <= 1:
+            decision = "APPROVE WITH CONDITIONS"
+            reasoning = f"Financial decision analysis: {question}. Requires additional documentation or risk mitigation measures."
+        elif approval_score > rejection_score:
+            decision = "APPROVED"
+            reasoning = f"Financial decision analysis: {question}. All criteria met with acceptable risk profile."
+        else:
+            decision = "REJECTED"
+            reasoning = f"Financial decision analysis: {question}. Risk factors exceed acceptable thresholds."
+        return decision, reasoning
+    
+    def _analyze_medical_decision(self, question: str, approval_score: int, rejection_score: int, conditional_score: int) -> tuple:
+        if conditional_score > 0:
+            decision = "REQUIRE ADDITIONAL TESTING"
+            reasoning = f"Medical decision analysis: {question}. Insufficient information for confident diagnosis."
+        elif approval_score > rejection_score:
+            decision = "APPROVED"
+            reasoning = f"Medical decision analysis: {question}. Evidence supports the proposed course of action."
+        else:
+            decision = "REJECTED"
+            reasoning = f"Medical decision analysis: {question}. Evidence does not support the proposed course of action."
+        return decision, reasoning
+    
+    def _analyze_legal_decision(self, question: str, approval_score: int, rejection_score: int, conditional_score: int) -> tuple:
+        if conditional_score > 0:
+            decision = "REQUIRE LEGAL REVIEW"
+            reasoning = f"Legal decision analysis: {question}. Complex legal considerations require expert review."
+        elif approval_score > rejection_score:
+            decision = "APPROVED"
+            reasoning = f"Legal decision analysis: {question}. Complies with applicable laws and regulations."
+        else:
+            decision = "REJECTED"
+            reasoning = f"Legal decision analysis: {question}. Does not comply with applicable laws and regulations."
+        return decision, reasoning
+    
+    def _analyze_content_decision(self, question: str, approval_score: int, rejection_score: int, conditional_score: int) -> tuple:
+        if conditional_score > 0:
+            decision = "FLAG FOR MANUAL REVIEW"
+            reasoning = f"Content decision analysis: {question}. Content requires human review for context."
+        elif approval_score > rejection_score:
+            decision = "APPROVED"
+            reasoning = f"Content decision analysis: {question}. Content meets community guidelines."
+        else:
+            decision = "REJECTED"
+            reasoning = f"Content decision analysis: {question}. Content violates community guidelines."
+        return decision, reasoning
+    
+    def _analyze_hiring_decision(self, question: str, approval_score: int, rejection_score: int, conditional_score: int) -> tuple:
+        if conditional_score > 0:
+            decision = "REQUIRE ADDITIONAL INTERVIEWS"
+            reasoning = f"Hiring decision analysis: {question}. Candidate shows potential but needs further evaluation."
+        elif approval_score > rejection_score:
+            decision = "APPROVED"
+            reasoning = f"Hiring decision analysis: {question}. Candidate meets all requirements and is a good fit."
+        else:
+            decision = "REJECTED"
+            reasoning = f"Hiring decision analysis: {question}. Candidate does not meet requirements or is not a good fit."
+        return decision, reasoning
+    
+    def _analyze_safety_decision(self, question: str, approval_score: int, rejection_score: int, conditional_score: int) -> tuple:
+        if conditional_score > 0:
+            decision = "IMPLEMENT SAFETY MEASURES"
+            reasoning = f"Safety decision analysis: {question}. Proceed with additional safety protocols."
+        elif approval_score > rejection_score:
+            decision = "APPROVED"
+            reasoning = f"Safety decision analysis: {question}. Safety requirements are met."
+        else:
+            decision = "REJECTED"
+            reasoning = f"Safety decision analysis: {question}. Safety requirements are not met."
+        return decision, reasoning
+    
+    def _analyze_general_decision(self, question: str, approval_score: int, rejection_score: int, conditional_score: int) -> tuple:
+        if conditional_score > 0:
+            decision = "REQUIRE ADDITIONAL INFORMATION"
+            reasoning = f"General decision analysis: {question}. More information needed for confident decision."
+        elif approval_score > rejection_score:
+            decision = "APPROVED"
+            reasoning = f"General decision analysis: {question}. Decision aligns with best practices and objectives."
+        else:
+            decision = "REJECTED"
+            reasoning = f"General decision analysis: {question}. Decision does not align with best practices or objectives."
+        return decision, reasoning
+    
+    def _get_ethical_considerations(self, category: str) -> list:
+        """Get relevant ethical considerations for the decision category"""
+        if category == "financial":
+            return [self.ethical_guidelines[0], self.ethical_guidelines[1], self.ethical_guidelines[4]]
+        elif category == "medical":
+            return [self.ethical_guidelines[0], self.ethical_guidelines[1], self.ethical_guidelines[3]]
+        elif category == "legal":
+            return [self.ethical_guidelines[4], self.ethical_guidelines[6], self.ethical_guidelines[7]]
+        elif category == "content":
+            return [self.ethical_guidelines[1], self.ethical_guidelines[3], self.ethical_guidelines[4]]
+        elif category == "hiring":
+            return [self.ethical_guidelines[4], self.ethical_guidelines[5], self.ethical_guidelines[7]]
+        elif category == "safety":
+            return [self.ethical_guidelines[1], self.ethical_guidelines[6], self.ethical_guidelines[7]]
+        else:
+            return self.ethical_guidelines[:3]
+    
+    def _calculate_confidence(self, approval_score: int, rejection_score: int, conditional_score: int, category: str, question: str) -> float:
+        """Calculate confidence score based on multiple factors"""
+        base_confidence = 70
+        
+        # Decision clarity factor
+        decision_clarity = abs(approval_score - rejection_score) * 5
+        base_confidence += decision_clarity
+        
+        # Category-specific confidence adjustments
+        category_confidence = {
+            "financial": 5,  # Financial decisions often have clear criteria
+            "medical": -5,   # Medical decisions can be complex
+            "legal": 0,      # Legal decisions vary in complexity
+            "content": 10,   # Content decisions often have clear guidelines
+            "hiring": -3,    # Hiring decisions can be subjective
+            "safety": 8,     # Safety decisions often have clear standards
+            "general": 0
+        }
+        
+        base_confidence += category_confidence.get(category, 0)
+        
+        # Conditional factor (reduces confidence)
+        if conditional_score > 0:
+            base_confidence -= conditional_score * 10
+        
+        # Question complexity factor
+        question_length = len(question.split())
+        if question_length > 20:
+            base_confidence -= 5
+        elif question_length < 5:
+            base_confidence -= 3
+        
+        # Ensure confidence is within bounds
+        return max(50, min(95, base_confidence))
     
     def generate_block_hash(self, decision_data: dict) -> str:
         """Generate a blockchain transaction hash"""
@@ -151,7 +350,8 @@ async def create_decision(request: DecisionRequest):
             "question": request.question,
             "reasoning": analysis["reasoning"],
             "decision": analysis["decision"],
-            "confidence": analysis["confidence"]
+            "confidence": analysis["confidence"],
+            "category": analysis["category"]
         }
         
         # Generate blockchain hash

@@ -1,11 +1,7 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
+import "./output.css"; // Temporarily use the generated Tailwind CSS
+import { Web3Provider } from "@/components/Web3Provider";
+import { GlobalNav } from "@/components/GlobalNav";
 
 export const metadata: Metadata = {
   title: "Neurochain - Transparent AI Decision-Making",
@@ -26,8 +22,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} font-sans antialiased`}>
-        {children}
+      <body className="font-sans antialiased">
+        <Web3Provider>
+          <GlobalNav />
+          <main className="pt-28">
+            {children}
+          </main>
+        </Web3Provider>
       </body>
     </html>
   );

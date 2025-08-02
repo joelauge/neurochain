@@ -3,44 +3,85 @@
 import { useState, useEffect } from 'react';
 import { 
   Brain, Shield, Zap, TrendingUp, ArrowRight, FileText,
-  Cpu, Network, Database, Lock, Eye, CircuitBoard
+  Cpu, Network, Database, Lock, Eye, CircuitBoard, AlertTriangle,
+  CheckCircle, Users, BarChart3, Code, Globe, ShieldCheck
 } from 'lucide-react';
+import { useWeb3 } from '@/components/Web3Provider';
+import Image from 'next/image';
 
 export default function HomePage() {
-  const [isWalletConnected, setIsWalletConnected] = useState(false);
+  const { isConnected, connectWallet, disconnectWallet, isLoading, error } = useWeb3();
   const [isBrowser, setIsBrowser] = useState(false);
 
   useEffect(() => {
     setIsBrowser(true);
   }, []);
 
-  const handleWalletConnect = () => {
-    setIsWalletConnected(!isWalletConnected);
-  };
-
   const features = [
     {
-      title: "AI TRANSPARENCY",
-      description: "Every AI decision is recorded on the blockchain with full traceability and explainability, ensuring complete transparency in the decision-making process.",
-      icon: <Eye className="w-12 h-12" />
+      title: "Real-time AI Monitoring",
+      description: "Capture and analyze AI reasoning processes in real-time to detect behavioral drift and potential misalignment.",
+      icon: <Eye className="w-6 h-6" />,
+      color: "from-purple-500 to-blue-500"
     },
     {
-      title: "HUMAN VALIDATION",
-      description: "Decentralized network of human validators ensures AI decisions are fair, ethical, and accurate through collective intelligence.",
-      icon: <Shield className="w-12 h-12" />
+      title: "Blockchain Transparency",
+      description: "Immutable audit trail on Ethereum ensures all AI decisions are publicly verifiable and tamper-proof.",
+      icon: <Shield className="w-6 h-6" />,
+      color: "from-blue-500 to-cyan-500"
     },
     {
-      title: "CONTINUOUS EVOLUTION",
-      description: "AI models improve through collective human feedback and validation, creating a self-improving system that learns from diverse perspectives.",
-      icon: <TrendingUp className="w-12 h-12" />
+      title: "Early Warning System",
+      description: "Advanced algorithms detect concerning patterns before they become critical safety issues.",
+      icon: <AlertTriangle className="w-6 h-6" />,
+      color: "from-cyan-500 to-green-500"
+    }
+  ];
+
+  const benefits = [
+    {
+      title: "Transparent Oversight",
+      description: "Public blockchain ensures all AI behavior is transparent and auditable, enabling community validation.",
+      icon: <Globe className="w-5 h-5" />
+    },
+    {
+      title: "Human Control Verification",
+      description: "Clear parameterization and ethical constructs determine if humans remain in control of AI systems.",
+      icon: <ShieldCheck className="w-5 h-5" />
+    },
+    {
+      title: "Community Validation",
+      description: "Decentralized validation network allows experts and stakeholders to verify AI alignment.",
+      icon: <Users className="w-5 h-5" />
+    },
+    {
+      title: "Comprehensive Analytics",
+      description: "Advanced metrics and dashboards provide deep insights into AI behavior patterns.",
+      icon: <BarChart3 className="w-5 h-5" />
     }
   ];
 
   const techStack = [
-    { name: "Next.js", icon: <Cpu className="w-10 h-10" /> },
-    { name: "FastAPI", icon: <Database className="w-10 h-10" /> },
-    { name: "Ethereum", icon: <Network className="w-10 h-10" /> },
-    { name: "LangChain", icon: <CircuitBoard className="w-10 h-10" /> }
+    { 
+      name: "Next.js 14", 
+      description: "Modern React framework for the frontend",
+      icon: <Cpu className="w-8 h-8" /> 
+    },
+    { 
+      name: "FastAPI", 
+      description: "High-performance Python backend",
+      icon: <Database className="w-8 h-8" /> 
+    },
+    { 
+      name: "Ethereum", 
+      description: "Decentralized blockchain storage",
+      icon: <Network className="w-8 h-8" /> 
+    },
+    { 
+      name: "IPFS", 
+      description: "Distributed file storage system",
+      icon: <CircuitBoard className="w-8 h-8" /> 
+    }
   ];
 
   return (
@@ -65,44 +106,72 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Navigation */}
-      <nav className="nav-glass">
-        <div className="nav-container">
-          <a href="/" className="logo">
-            <div className="logo-icon">
-              <Brain />
-            </div>
-            <span>NEUROCHAIN</span>
-          </a>
-          <button
-            onClick={handleWalletConnect}
-            className={`connect-btn ${isWalletConnected ? 'connected' : ''}`}
-          >
-            {isWalletConnected ? 'CONNECTED' : 'CONNECT WALLET'}
-          </button>
-        </div>
-      </nav>
-
       {/* Hero Section */}
       <section className="hero">
         <div className="hero-container">
           <h1 className="hero-title">
-            TRANSPARENT AI DECISION MAKING
+            Monitor AI through blockchain to ensure human control
           </h1>
           <p className="hero-subtitle">
-            Revolutionizing AI decision-making with blockchain technology, creating an{' '}
-            <span className="hero-highlight">immutable, auditable framework</span>{' '}
-            that ensures transparency and accountability in every AI decision.
+            Neurochain creates transparent oversight of AI systems, ensuring they remain{' '}
+            <span className="hero-highlight">aligned with human values and under human control</span>{' '}
+            through immutable blockchain monitoring and community validation.
           </p>
           <div className="hero-buttons">
-            <a href="/demo" className="hero-btn">
+            <a href="/demo" className="resend-btn-primary">
               <Zap className="w-5 h-5" />
-              LAUNCH DEMO
+              Launch Demo
             </a>
-            <a href="/whitepaper" className="hero-btn secondary">
+            <a href="/whitepaper" className="resend-btn-secondary">
               <FileText className="w-5 h-5" />
-              READ WHITEPAPER
+              Read Whitepaper
             </a>
+          </div>
+        </div>
+      </section>
+
+      {/* Companies Trust Section */}
+      <section className="section">
+        <div className="section-container">
+          <p className="text-center text-gray-400 mb-8 text-sm font-medium">
+            WORKS ON LEADING REASONING MODELS FROM:
+          </p>
+          <div className="companies-row">
+            <Image
+              src="/openai_trans.png"
+              alt="OpenAI"
+              width={200}
+              height={200}
+              className="company-logo-image"
+            />
+            <Image
+              src="/anthropic_trans.png"
+              alt="Anthropic"
+              width={200}
+              height={200}
+              className="company-logo-image"
+            />
+            <Image
+              src="/deepseek_trans.png"
+              alt="DeepSeek"
+              width={200}
+              height={200}
+              className="company-logo-image"
+            />
+            <Image
+              src="/grok_trans.png"
+              alt="Grok"
+              width={200}
+              height={200}
+              className="company-logo-image"
+            />
+            <Image
+              src="/meta_trans.png"
+              alt="Meta"
+              width={200}
+              height={200}
+              className="company-logo-image"
+            />
           </div>
         </div>
       </section>
@@ -110,15 +179,14 @@ export default function HomePage() {
       {/* Features Section */}
       <section className="section">
         <div className="section-container">
-          <h2 className="section-title">WHY NEUROCHAIN?</h2>
+          <h2 className="section-title">First-class AI monitoring experience</h2>
           <p className="section-subtitle">
-            Traditional AI systems operate as black boxes. Neurochain brings transparency and accountability 
-            to AI decision-making through blockchain technology.
+            We are a team of engineers who love building tools for AI safety. Our goal is to create the AI monitoring platform we've always wished we had — one that just works.
           </p>
           <div className="features-grid">
             {features.map((feature, index) => (
               <div key={feature.title} className="feature-card">
-                <div className="feature-icon">
+                <div className={`feature-icon bg-gradient-to-r ${feature.color}`}>
                   {feature.icon}
                 </div>
                 <h3 className="feature-title">{feature.title}</h3>
@@ -129,12 +197,35 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Benefits Section */}
+      <section className="section bg-gradient-to-b from-transparent to-gray-900/20">
+        <div className="section-container">
+          <h2 className="section-title">Everything in your control</h2>
+          <p className="section-subtitle">
+            Complete visibility and control over AI monitoring with comprehensive analytics and community validation.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-20 mt-12">
+            {benefits.map((benefit) => (
+              <div key={benefit.title} className="benefit-card mb-20">
+                <div className="benefit-icon">
+                  {benefit.icon}
+                </div>
+                <div>
+                  <h3 className="benefit-title">{benefit.title}</h3>
+                  <p className="benefit-description">{benefit.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Technology Stack */}
       <section className="section">
         <div className="section-container">
-          <h2 className="section-title">TECHNOLOGY STACK</h2>
+          <h2 className="section-title">Built with modern technologies</h2>
           <p className="section-subtitle">
-            Built with cutting-edge technologies for scalability, security, and performance.
+            Leveraging cutting-edge tools and frameworks for secure, transparent, and scalable AI monitoring.
           </p>
           <div className="tech-grid">
             {techStack.map((tech) => (
@@ -143,8 +234,53 @@ export default function HomePage() {
                   {tech.icon}
                 </div>
                 <div className="tech-name">{tech.name}</div>
+                <div className="tech-description">{tech.description}</div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Architecture Preview */}
+      <section className="section bg-gradient-to-b from-gray-900/20 to-transparent">
+        <div className="section-container">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 className="section-title text-left">AI Model Integration Layer</h2>
+              <p className="text-gray-300 mb-6">
+                Intercept AI model calls and capture reasoning processes through API proxies that wrap AI providers. 
+                Supports OpenAI GPT, Anthropic Claude, and custom AI systems with minimal latency impact.
+              </p>
+              <div className="space-y-4">
+                <div className="bg-gray-800/30 p-4 rounded-lg border border-gray-700/50 flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
+                  <span className="text-gray-300 font-medium">Real-time reasoning capture</span>
+                </div>
+                <div className="bg-gray-800/30 p-4 rounded-lg border border-gray-700/50 flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
+                  <span className="text-gray-300 font-medium">Multi-provider support</span>
+                </div>
+                <div className="bg-gray-800/30 p-4 rounded-lg border border-gray-700/50 flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
+                  <span className="text-gray-300 font-medium">Minimal performance impact</span>
+                </div>
+              </div>
+            </div>
+            <div className="architecture-preview">
+              <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                  <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                </div>
+                <div className="space-y-3">
+                  <div className="h-4 bg-gray-700 rounded w-3/4"></div>
+                  <div className="h-4 bg-gray-700 rounded w-1/2"></div>
+                  <div className="h-4 bg-gray-700 rounded w-5/6"></div>
+                  <div className="h-4 bg-gray-700 rounded w-2/3"></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -152,11 +288,17 @@ export default function HomePage() {
       {/* CTA Section */}
       <section className="cta-section">
         <div className="section-container">
-          <h2 className="cta-title">READY TO EXPERIENCE THE FUTURE?</h2>
-          <a href="/demo" className="cta-btn">
-            <ArrowRight className="w-6 h-6" />
-            LAUNCH DEMO NOW
-          </a>
+          <h2 className="cta-title">AI monitoring reimagined. Available today.</h2>
+          <div className="flex justify-center gap-4 flex-wrap">
+            <a href="/demo" className="resend-btn-primary">
+              <ArrowRight className="w-5 h-5" />
+              Launch Demo
+            </a>
+            <a href="/whitepaper" className="resend-btn-secondary">
+              <FileText className="w-5 h-5" />
+              Read Documentation
+            </a>
+          </div>
         </div>
       </section>
 
@@ -164,13 +306,16 @@ export default function HomePage() {
       <footer className="footer">
         <div className="footer-container">
           <div className="footer-logo">
-            <div className="footer-logo-icon">
-              <Brain />
-            </div>
-            <span>NEUROCHAIN</span>
+            <Image
+              src="/neurochain_logo__white500px.png"
+              alt="Neurochain"
+              width={72}
+              height={72}
+              className="footer-logo-image"
+            />
           </div>
           <p className="footer-text">
-            © 2024 Neurochain. Revolutionizing AI transparency through blockchain technology.
+            © 2024 Neurochain. Monitoring AI through blockchain to ensure human control.
           </p>
         </div>
       </footer>
