@@ -234,16 +234,84 @@ export default function DemoPage() {
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
   const [selectedDecision, setSelectedDecision] = useState<Decision | null>(null);
   const [mockData, setMockData] = useState<{ mockDecisions: Decision[], mockTransactions: BlockchainTransaction[] } | null>(null);
+  const [dataLoadingProgress, setDataLoadingProgress] = useState(0);
+  const [isDataLoading, setIsDataLoading] = useState(false);
+  const [visibleDecisions, setVisibleDecisions] = useState<Decision[]>([]);
+  const [visibleTransactions, setVisibleTransactions] = useState<BlockchainTransaction[]>([]);
 
   useEffect(() => {
     setIsBrowser(true);
     // Generate mock data once
     const data = generateMockData();
     setMockData(data);
-    // Load initial data
-    fetchStats();
-    fetchDecisions();
+    // Start animated data loading
+    startAnimatedDataLoading(data);
   }, []);
+
+  const startAnimatedDataLoading = async (data: { mockDecisions: Decision[], mockTransactions: BlockchainTransaction[] }) => {
+    setIsDataLoading(true);
+    setDataLoadingProgress(0);
+    
+    // Sort decisions by timestamp (most recent first)
+    const sortedDecisions = data.mockDecisions
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    
+    const sortedTransactions = data.mockTransactions
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    
+    // Animate loading decisions one by one
+    for (let i = 0; i < Math.min(10, sortedDecisions.length); i++) {
+      await new Promise(resolve => setTimeout(resolve, 200 + Math.random() * 300));
+      setVisibleDecisions(prev => [...prev, sortedDecisions[i]]);
+      setDataLoadingProgress((i + 1) / 10 * 100);
+    }
+    
+    // Animate loading transactions
+    for (let i = 0; i < Math.min(10, sortedTransactions.length); i++) {
+      await new Promise(resolve => setTimeout(resolve, 100 + Math.random() * 200));
+      setVisibleTransactions(prev => [...prev, sortedTransactions[i]]);
+    }
+    
+    // Update stats with animation
+    await animateStats(data);
+    
+    setIsDataLoading(false);
+    setDataLoadingProgress(100);
+  };
+
+  const animateStats = async (data: { mockDecisions: Decision[], mockTransactions: BlockchainTransaction[] }) => {
+    const totalDecisions = data.mockDecisions.length;
+    const validatedDecisions = data.mockDecisions.filter(d => d.status === 'validated').length;
+    const pendingDecisions = data.mockDecisions.filter(d => d.status === 'pending').length;
+    const averageConfidence = data.mockDecisions.reduce((sum, d) => sum + d.confidence, 0) / totalDecisions;
+    const anomaliesDetected = data.mockTransactions.filter(t => t.status === 'anomaly_detected').length;
+    
+    // Animate each stat
+    const targetStats = {
+      total_decisions: totalDecisions,
+      validated_decisions: validatedDecisions,
+      pending_decisions: pendingDecisions,
+      average_confidence: Math.round(averageConfidence),
+      system_status: 'healthy',
+      ai_models_monitored: 3,
+      anomalies_detected: anomaliesDetected
+    };
+    
+    // Animate from 0 to target values
+    for (let step = 0; step <= 20; step++) {
+      const progress = step / 20;
+      setStats({
+        total_decisions: Math.round(targetStats.total_decisions * progress),
+        validated_decisions: Math.round(targetStats.validated_decisions * progress),
+        pending_decisions: Math.round(targetStats.pending_decisions * progress),
+        average_confidence: Math.round(targetStats.average_confidence * progress),
+        system_status: 'healthy',
+        ai_models_monitored: 3,
+        anomalies_detected: Math.round(targetStats.anomalies_detected * progress)
+      });
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+  };
 
   const fetchStats = async () => {
     try {
@@ -274,12 +342,8 @@ export default function DemoPage() {
     try {
       if (!mockData) return;
       
-      // Get the most recent 10 decisions
-      const recentDecisions = mockData.mockDecisions
-        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-        .slice(0, 10);
-      
-      setDecisions(recentDecisions);
+      // Use visible decisions instead of fetching
+      setDecisions(visibleDecisions);
     } catch (err) {
       console.error('Error fetching decisions:', err);
       setError('Failed to load decisions');
@@ -360,8 +424,20 @@ export default function DemoPage() {
         }
       };
       
-      // Add new decision to the list
+      // Add new decision to the list with animation
       setDecisions(prev => [newDecision, ...prev.slice(0, 9)]);
+      setVisibleDecisions(prev => [newDecision, ...prev.slice(0, 9)]);
+      
+      // Add a temporary highlight class to the new decision
+      setTimeout(() => {
+        const decisionElement = document.querySelector(`[data-decision-id="${newDecision.id}"]`);
+        if (decisionElement) {
+          decisionElement.classList.add('animate-glow');
+          setTimeout(() => {
+            decisionElement.classList.remove('animate-glow');
+          }, 3000);
+        }
+      }, 100);
       
       // Create corresponding blockchain transaction
       const newTransaction: BlockchainTransaction = {
@@ -602,33 +678,79 @@ export default function DemoPage() {
         </div>
 
         {/* Stats */}
+        {/* Loading Progress */}
+        {isDataLoading && (
+          <div className="mb-8 p-6 glass rounded-lg border border-cyan-500/30">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <Loader2 className="w-5 h-5 text-cyan-400 animate-spin" />
+                <span className="text-cyan-400 font-semibold">Loading Historical Data...</span>
+              </div>
+              <span className="text-cyan-400 font-mono">{Math.round(dataLoadingProgress)}%</span>
+            </div>
+            <div className="w-full bg-gray-800 rounded-full h-2">
+              <div 
+                className="bg-gradient-to-r from-cyan-500 to-purple-500 h-2 rounded-full transition-all duration-300 ease-out"
+                style={{ width: `${dataLoadingProgress}%` }}
+              />
+            </div>
+            <div className="mt-2 text-xs text-gray-400">
+              Loading {visibleDecisions.length} decisions and {visibleTransactions.length} transactions...
+            </div>
+          </div>
+        )}
+
         <div className="tech-grid mb-16">
           <div className="tech-card">
             <div className="tech-icon">
               <Brain />
             </div>
-            <div className="tech-name">{stats.total_decisions}</div>
+            <div className="tech-name">
+              {isDataLoading ? (
+                <span className="text-cyan-400 animate-pulse">...</span>
+              ) : (
+                stats.total_decisions
+              )}
+            </div>
             <p className="text-sm text-gray-400 mt-2">AI DECISIONS MONITORED</p>
           </div>
           <div className="tech-card">
             <div className="tech-icon">
               <Shield />
             </div>
-            <div className="tech-name">{stats.validated_decisions}</div>
+            <div className="tech-name">
+              {isDataLoading ? (
+                <span className="text-green-400 animate-pulse">...</span>
+              ) : (
+                stats.validated_decisions
+              )}
+            </div>
             <p className="text-sm text-gray-400 mt-2">VALIDATED</p>
           </div>
           <div className="tech-card">
             <div className="tech-icon">
               <AlertTriangle />
             </div>
-            <div className="tech-name">{stats.anomalies_detected}</div>
+            <div className="tech-name">
+              {isDataLoading ? (
+                <span className="text-red-400 animate-pulse">...</span>
+              ) : (
+                stats.anomalies_detected
+              )}
+            </div>
             <p className="text-sm text-gray-400 mt-2">ANOMALIES DETECTED</p>
           </div>
           <div className="tech-card">
             <div className="tech-icon">
               <Cpu />
             </div>
-            <div className="tech-name">{stats.ai_models_monitored}</div>
+            <div className="tech-name">
+              {isDataLoading ? (
+                <span className="text-purple-400 animate-pulse">...</span>
+              ) : (
+                stats.ai_models_monitored
+              )}
+            </div>
             <p className="text-sm text-gray-400 mt-2">AI MODELS MONITORED</p>
           </div>
         </div>
@@ -665,10 +787,15 @@ export default function DemoPage() {
               <h2 className="feature-title">AI REASONING MONITORING</h2>
             </div>
             <div className="space-y-4 max-h-96 overflow-y-auto">
-              {decisions.map((decision) => (
+              {decisions.map((decision, index) => (
                 <div 
                   key={decision.id} 
-                  className="glass p-4 rounded-lg border border-gray-700/50 cursor-pointer hover:border-cyan-500/50 transition-colors"
+                  data-decision-id={decision.id}
+                  className="glass p-4 rounded-lg border border-gray-700/50 cursor-pointer hover:border-cyan-500/50 transition-all duration-500 ease-out"
+                  style={{
+                    animationDelay: `${index * 100}ms`,
+                    animation: isDataLoading ? 'slideInFromRight 0.5s ease-out forwards' : 'none'
+                  }}
                   onClick={() => setSelectedDecision(decision)}
                 >
                   <div className="flex justify-between items-start mb-3">
