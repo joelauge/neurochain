@@ -26,13 +26,13 @@ export default function HomePage() {
     },
     {
       title: "Blockchain Transparency",
-      description: "Immutable audit trail on Ethereum ensures all AI decisions are publicly verifiable and tamper-proof.",
+      description: "Immutable audit trail on custom blockchain + protected redundant sidechain ensures all AI decisions are publicly verifiable and tamper-proof.",
       icon: <Shield className="w-6 h-6" />,
       color: "from-blue-500 to-cyan-500"
     },
     {
       title: "Early Warning System",
-      description: "Advanced algorithms detect concerning patterns before they become critical safety issues.",
+      description: "Advanced trustless algorithms detect concerning patterns before they become critical safety issues.",
       icon: <AlertTriangle className="w-6 h-6" />,
       color: "from-cyan-500 to-green-500"
     }
@@ -63,24 +63,34 @@ export default function HomePage() {
 
   const techStack = [
     { 
-      name: "Next.js 14", 
-      description: "Modern React framework for the frontend",
+      name: "Python AI Engine", 
+      description: "LangChain-powered reasoning with real-time decision capture",
+      icon: <Brain className="w-8 h-8" /> 
+    },
+    { 
+      name: "Custom FPGA", 
+      description: "Hardware-accelerated AI co-signer for cryptographic validation",
       icon: <Cpu className="w-8 h-8" /> 
     },
     { 
-      name: "FastAPI", 
-      description: "High-performance Python backend",
+      name: "IPFS Storage", 
+      description: "Decentralized immutable storage for decision records",
       icon: <Database className="w-8 h-8" /> 
     },
     { 
-      name: "Ethereum", 
-      description: "Decentralized blockchain storage",
+      name: "Custom Blockchain", 
+      description: "Specialized sidechains optimized for AI reasoning validation",
       icon: <Network className="w-8 h-8" /> 
     },
     { 
-      name: "IPFS", 
-      description: "Distributed file storage system",
-      icon: <CircuitBoard className="w-8 h-8" /> 
+      name: "Hardware Acceleration", 
+      description: "Inline reasoning log buffers with WAL architecture",
+      icon: <Zap className="w-8 h-8" /> 
+    },
+    { 
+      name: "Smart Contracts", 
+      description: "Solidity contracts for decentralized consensus validation",
+      icon: <Shield className="w-8 h-8" /> 
     }
   ];
 
@@ -181,7 +191,7 @@ export default function HomePage() {
         <div className="section-container">
           <h2 className="section-title">First-class AI monitoring experience</h2>
           <p className="section-subtitle">
-            We are a team of engineers who love building tools for AI safety. Our goal is to create the AI monitoring platform we've always wished we had — one that just works.
+            We are a team of forward-thinkers who believe AGI is inevitable and AI safety, critical. Our goal is to create the AI monitoring platform we all need to ensure AGI is safe and aligned with human values.
           </p>
           <div className="features-grid">
             {features.map((feature, index) => (
@@ -200,7 +210,7 @@ export default function HomePage() {
       {/* Benefits Section */}
       <section className="section bg-gradient-to-b from-transparent to-gray-900/20">
         <div className="section-container">
-          <h2 className="section-title">Everything in your control</h2>
+          <h2 className="section-title">Everything distributed - including accountability.</h2>
           <p className="section-subtitle">
             Complete visibility and control over AI monitoring with comprehensive analytics and community validation.
           </p>
@@ -223,9 +233,9 @@ export default function HomePage() {
       {/* Technology Stack */}
       <section className="section">
         <div className="section-container">
-          <h2 className="section-title">Built with modern technologies</h2>
+          <h2 className="section-title">Built with specialized technologies</h2>
           <p className="section-subtitle">
-            Leveraging cutting-edge tools and frameworks for secure, transparent, and scalable AI monitoring.
+            Custom hardware acceleration, blockchain infrastructure, and AI reasoning engines designed for transparent, auditable AI monitoring at scale.
           </p>
           <div className="tech-grid">
             {techStack.map((tech) => (
@@ -246,23 +256,23 @@ export default function HomePage() {
         <div className="section-container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="section-title text-left">AI Model Integration Layer</h2>
+              <h2 className="section-title text-left">Hardware-Accelerated AI Monitoring</h2>
               <p className="text-gray-300 mb-6">
-                Intercept AI model calls and capture reasoning processes through API proxies that wrap AI providers. 
-                Supports OpenAI GPT, Anthropic Claude, and custom AI systems with minimal latency impact.
+                Custom FPGA co-signers and inline reasoning log buffers capture AI decisions at hardware speed. 
+                Specialized blockchain sidechains provide real-time validation with cryptographic guarantees.
               </p>
               <div className="space-y-4">
                 <div className="bg-gray-800/30 p-4 rounded-lg border border-gray-700/50 flex items-center gap-3">
                   <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
-                  <span className="text-gray-300 font-medium">Real-time reasoning capture</span>
+                  <span className="text-gray-300 font-medium">FPGA-accelerated decision capture</span>
                 </div>
                 <div className="bg-gray-800/30 p-4 rounded-lg border border-gray-700/50 flex items-center gap-3">
                   <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
-                  <span className="text-gray-300 font-medium">Multi-provider support</span>
+                  <span className="text-gray-300 font-medium">Custom blockchain sidechains</span>
                 </div>
                 <div className="bg-gray-800/30 p-4 rounded-lg border border-gray-700/50 flex items-center gap-3">
                   <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
-                  <span className="text-gray-300 font-medium">Minimal performance impact</span>
+                  <span className="text-gray-300 font-medium">Hardware-level cryptographic validation</span>
                 </div>
               </div>
             </div>
