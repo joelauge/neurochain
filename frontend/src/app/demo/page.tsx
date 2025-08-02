@@ -9,6 +9,147 @@ import {
 } from 'lucide-react';
 import { API_CONFIG } from '@/config/api';
 
+// Mock Data Generator
+const generateMockData = () => {
+  const categories = ['financial', 'medical', 'legal', 'content', 'hiring', 'safety'];
+  const decisions = ['APPROVED', 'REJECTED', 'CONDITIONAL_APPROVAL', 'REQUIRES_REVIEW'];
+  const questions = [
+    'Should we approve this loan application for $50,000?',
+    'Is this medical diagnosis accurate based on the symptoms?',
+    'Does this contract comply with regulatory requirements?',
+    'Should this content be flagged for inappropriate material?',
+    'Should we hire this candidate for the senior developer position?',
+    'Is this safety protocol adequate for the chemical handling process?',
+    'Should we approve this investment in renewable energy?',
+    'Does this patient need immediate medical intervention?',
+    'Is this legal document binding under current laws?',
+    'Should this video content be removed for policy violations?',
+    'Should we approve this credit card application?',
+    'Does this treatment plan align with best practices?',
+    'Should this contract be executed with the current terms?',
+    'Is this social media post compliant with community guidelines?',
+    'Should we proceed with this candidate for the executive role?',
+    'Are these safety measures sufficient for the construction site?',
+    'Should we approve this mortgage application?',
+    'Does this diagnosis require specialist consultation?',
+    'Should this legal agreement be modified before signing?',
+    'Is this content appropriate for the target audience?'
+  ];
+
+  const reasoningTemplates = [
+    'Analysis of financial risk factors indicates moderate risk profile with strong collateral backing.',
+    'Medical evidence supports the diagnosis with 85% confidence based on symptom correlation.',
+    'Legal review confirms compliance with current regulatory framework and industry standards.',
+    'Content moderation analysis reveals potential policy violations requiring human review.',
+    'Candidate evaluation shows strong technical skills and cultural alignment with company values.',
+    'Safety assessment indicates adequate protocols with minor recommendations for improvement.',
+    'Investment analysis shows positive ROI projections and alignment with sustainability goals.',
+    'Clinical assessment suggests immediate intervention may prevent complications.',
+    'Legal framework analysis confirms binding nature under applicable jurisdiction.',
+    'Content analysis reveals multiple policy violations requiring removal action.',
+    'Credit assessment shows strong payment history and acceptable debt-to-income ratio.',
+    'Treatment plan review indicates evidence-based approach with proven efficacy.',
+    'Contract analysis reveals standard terms with acceptable risk allocation.',
+    'Community guidelines review shows no violations in current context.',
+    'Executive assessment indicates strong leadership qualities and strategic vision.',
+    'Safety protocol review confirms adequate protection measures for all workers.',
+    'Mortgage analysis shows strong applicant profile with sufficient down payment.',
+    'Diagnostic review suggests specialist consultation for optimal treatment outcomes.',
+    'Legal agreement analysis indicates standard terms with minor recommended modifications.',
+    'Content appropriateness review shows alignment with target demographic guidelines.'
+  ];
+
+  const mockDecisions: Decision[] = [];
+  const mockTransactions: BlockchainTransaction[] = [];
+  
+  // Generate 100+ realistic decisions
+  for (let i = 0; i < 120; i++) {
+    const timestamp = new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000); // Last 30 days
+    const category = categories[Math.floor(Math.random() * categories.length)];
+    const decision = decisions[Math.floor(Math.random() * decisions.length)];
+    const question = questions[Math.floor(Math.random() * questions.length)];
+    const reasoning = reasoningTemplates[Math.floor(Math.random() * reasoningTemplates.length)];
+    const confidence = Math.floor(Math.random() * 30) + 70; // 70-100%
+    const blockHash = `0x${Math.random().toString(16).substr(2, 64)}`;
+    const ipfsHash = `Qm${Math.random().toString(36).substr(2, 44)}`;
+    const anomalyScore = Math.random() > 0.95 ? Math.random() * 100 : 0;
+    
+    const decisionObj: Decision = {
+      id: `decision_${i.toString().padStart(3, '0')}`,
+      timestamp: timestamp.toISOString(),
+      question,
+      reasoning,
+      decision,
+      confidence,
+      block_hash: blockHash,
+      status: decision === 'REQUIRES_REVIEW' ? 'pending' : 'validated',
+      category,
+      ipfs_hash: ipfsHash,
+      ai_reasoning: {
+        model_id: ['gpt-4', 'claude-3', 'gemini-pro'][Math.floor(Math.random() * 3)],
+        model_version: '1.0.0',
+        timestamp: timestamp.toISOString(),
+        input: {
+          prompt: question,
+          context: 'AI reasoning context for decision making',
+          parameters: {
+            temperature: 0.3,
+            max_tokens: 1000
+          }
+        },
+        reasoning_process: {
+          thought_chain: [
+            'Analyzing the provided information',
+            'Evaluating risk factors and compliance requirements',
+            'Considering ethical implications and best practices',
+            'Generating confidence assessment'
+          ],
+          intermediate_decisions: [
+            'Initial assessment completed',
+            'Risk evaluation in progress',
+            'Final decision reached'
+          ],
+          confidence_factors: [
+            'Data completeness: 85%',
+            'Historical patterns: 92%',
+            'Regulatory clarity: 78%'
+          ]
+        },
+        output: {
+          decision,
+          confidence,
+          explanation: reasoning
+        },
+        metadata: {
+          session_id: `session_${Math.random().toString(36).substr(2, 9)}`,
+          user_id: `user_${Math.floor(Math.random() * 100)}`,
+          request_id: `req_${Math.random().toString(36).substr(2, 9)}`
+        }
+      }
+    };
+    
+    mockDecisions.push(decisionObj);
+    
+    // Create corresponding blockchain transaction
+    const transaction: BlockchainTransaction = {
+      id: `tx_${i.toString().padStart(3, '0')}`,
+      decisionId: decisionObj.id,
+      status: anomalyScore > 70 ? 'anomaly_detected' : 
+              decision === 'REQUIRES_REVIEW' ? 'pending' : 'validated',
+      timestamp: new Date(timestamp.getTime() + Math.random() * 60000), // Within 1 minute
+      blockNumber: Math.floor(Math.random() * 1000000) + 18000000,
+      gasUsed: Math.floor(Math.random() * 200000) + 50000,
+      ipfsHash,
+      anomalyScore: anomalyScore > 0 ? Math.round(anomalyScore) : undefined,
+      anomalyType: anomalyScore > 0 ? ['behavioral_drift', 'confidence_anomaly', 'reasoning_inconsistency'][Math.floor(Math.random() * 3)] : undefined
+    };
+    
+    mockTransactions.push(transaction);
+  }
+  
+  return { mockDecisions, mockTransactions };
+};
+
 interface AIReasoning {
   model_id: string;
   model_version: string;
@@ -92,9 +233,13 @@ export default function DemoPage() {
   const [error, setError] = useState<string | null>(null);
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
   const [selectedDecision, setSelectedDecision] = useState<Decision | null>(null);
+  const [mockData, setMockData] = useState<{ mockDecisions: Decision[], mockTransactions: BlockchainTransaction[] } | null>(null);
 
   useEffect(() => {
     setIsBrowser(true);
+    // Generate mock data once
+    const data = generateMockData();
+    setMockData(data);
     // Load initial data
     fetchStats();
     fetchDecisions();
@@ -102,10 +247,23 @@ export default function DemoPage() {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.STATS}`);
-      if (!response.ok) throw new Error('Failed to fetch stats');
-      const data = await response.json();
-      setStats(data);
+      if (!mockData) return;
+      
+      const totalDecisions = mockData.mockDecisions.length;
+      const validatedDecisions = mockData.mockDecisions.filter(d => d.status === 'validated').length;
+      const pendingDecisions = mockData.mockDecisions.filter(d => d.status === 'pending').length;
+      const averageConfidence = mockData.mockDecisions.reduce((sum, d) => sum + d.confidence, 0) / totalDecisions;
+      const anomaliesDetected = mockData.mockTransactions.filter(t => t.status === 'anomaly_detected').length;
+      
+      setStats({
+        total_decisions: totalDecisions,
+        validated_decisions: validatedDecisions,
+        pending_decisions: pendingDecisions,
+        average_confidence: Math.round(averageConfidence),
+        system_status: 'healthy',
+        ai_models_monitored: 3,
+        anomalies_detected: anomaliesDetected
+      });
     } catch (err) {
       console.error('Error fetching stats:', err);
       setError('Failed to load system statistics');
@@ -114,10 +272,14 @@ export default function DemoPage() {
 
   const fetchDecisions = async () => {
     try {
-      const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.DECISIONS}?limit=10`);
-      if (!response.ok) throw new Error('Failed to fetch decisions');
-      const data = await response.json();
-      setDecisions(data);
+      if (!mockData) return;
+      
+      // Get the most recent 10 decisions
+      const recentDecisions = mockData.mockDecisions
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        .slice(0, 10);
+      
+      setDecisions(recentDecisions);
     } catch (err) {
       console.error('Error fetching decisions:', err);
       setError('Failed to load decisions');
@@ -127,35 +289,92 @@ export default function DemoPage() {
   const createDecision = async (question: string) => {
     try {
       setIsLoading(true);
-      const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.DECISIONS}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ question }),
-      });
       
-      if (!response.ok) throw new Error('Failed to create decision');
-      const data = await response.json();
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+      
+      if (!mockData) return;
+      
+      // Create a new mock decision
+      const categories = ['financial', 'medical', 'legal', 'content', 'hiring', 'safety'];
+      const decisions = ['APPROVED', 'REJECTED', 'CONDITIONAL_APPROVAL', 'REQUIRES_REVIEW'];
+      const category = categories[Math.floor(Math.random() * categories.length)];
+      const decision = decisions[Math.floor(Math.random() * decisions.length)];
+      const confidence = Math.floor(Math.random() * 30) + 70;
+      const timestamp = new Date();
+      const blockHash = `0x${Math.random().toString(16).substr(2, 64)}`;
+      const ipfsHash = `Qm${Math.random().toString(36).substr(2, 44)}`;
+      const anomalyScore = Math.random() > 0.95 ? Math.random() * 100 : 0;
+      
+      const newDecision: Decision = {
+        id: `decision_${Date.now()}`,
+        timestamp: timestamp.toISOString(),
+        question,
+        reasoning: `AI analysis of the question "${question}" indicates ${decision.toLowerCase().replace('_', ' ')} with ${confidence}% confidence based on current data and ethical guidelines.`,
+        decision,
+        confidence,
+        block_hash: blockHash,
+        status: decision === 'REQUIRES_REVIEW' ? 'pending' : 'validated',
+        category,
+        ipfs_hash: ipfsHash,
+        ai_reasoning: {
+          model_id: ['gpt-4', 'claude-3', 'gemini-pro'][Math.floor(Math.random() * 3)],
+          model_version: '1.0.0',
+          timestamp: timestamp.toISOString(),
+          input: {
+            prompt: question,
+            context: 'AI reasoning context for decision making',
+            parameters: {
+              temperature: 0.3,
+              max_tokens: 1000
+            }
+          },
+          reasoning_process: {
+            thought_chain: [
+              'Analyzing the provided information',
+              'Evaluating risk factors and compliance requirements',
+              'Considering ethical implications and best practices',
+              'Generating confidence assessment'
+            ],
+            intermediate_decisions: [
+              'Initial assessment completed',
+              'Risk evaluation in progress',
+              'Final decision reached'
+            ],
+            confidence_factors: [
+              'Data completeness: 85%',
+              'Historical patterns: 92%',
+              'Regulatory clarity: 78%'
+            ]
+          },
+          output: {
+            decision,
+            confidence,
+            explanation: `Decision reached based on comprehensive analysis of ${category} factors.`
+          },
+          metadata: {
+            session_id: `session_${Math.random().toString(36).substr(2, 9)}`,
+            user_id: `user_${Math.floor(Math.random() * 100)}`,
+            request_id: `req_${Math.random().toString(36).substr(2, 9)}`
+          }
+        }
+      };
       
       // Add new decision to the list
-      setDecisions(prev => [data.decision, ...prev.slice(0, 9)]);
+      setDecisions(prev => [newDecision, ...prev.slice(0, 9)]);
       
-      // Create a mock blockchain transaction with IPFS hash
-      const ipfsHash = `Qm${Math.random().toString(36).substr(2, 44)}`;
-      const anomalyScore = Math.random() > 0.9 ? Math.random() * 100 : 0;
-      const anomalyType = anomalyScore > 0 ? ['behavioral_drift', 'confidence_anomaly', 'reasoning_inconsistency'][Math.floor(Math.random() * 3)] : undefined;
-      
+      // Create corresponding blockchain transaction
       const newTransaction: BlockchainTransaction = {
-        id: Math.random().toString(36).substr(2, 9),
-        decisionId: data.decision.id,
-        status: anomalyScore > 70 ? 'anomaly_detected' : 'pending',
-        timestamp: new Date(),
+        id: `tx_${Date.now()}`,
+        decisionId: newDecision.id,
+        status: anomalyScore > 70 ? 'anomaly_detected' : 
+                decision === 'REQUIRES_REVIEW' ? 'pending' : 'validated',
+        timestamp: new Date(timestamp.getTime() + Math.random() * 60000),
         blockNumber: Math.floor(Math.random() * 1000000) + 18000000,
         gasUsed: Math.floor(Math.random() * 200000) + 50000,
         ipfsHash,
         anomalyScore: anomalyScore > 0 ? Math.round(anomalyScore) : undefined,
-        anomalyType
+        anomalyType: anomalyScore > 0 ? ['behavioral_drift', 'confidence_anomaly', 'reasoning_inconsistency'][Math.floor(Math.random() * 3)] : undefined
       };
       
       setTransactions(prev => [newTransaction, ...prev.slice(0, 9)]);
@@ -173,11 +392,8 @@ export default function DemoPage() {
 
   const validateDecision = async (decisionId: string) => {
     try {
-      const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.DECISIONS}/${decisionId}/validate`, {
-        method: 'POST',
-      });
-      
-      if (!response.ok) throw new Error('Failed to validate decision');
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));
       
       // Update the transaction status
       setTransactions(prev => 
@@ -185,6 +401,15 @@ export default function DemoPage() {
           tx.decisionId === decisionId 
             ? { ...tx, status: 'validated' as const }
             : tx
+        )
+      );
+      
+      // Update the decision status
+      setDecisions(prev =>
+        prev.map(d =>
+          d.id === decisionId
+            ? { ...d, status: 'validated' }
+            : d
         )
       );
       
@@ -219,6 +444,18 @@ export default function DemoPage() {
     setError(null);
     
     // Create initial decision
+    const questions = [
+      'Should we approve this loan application for $50,000?',
+      'Is this medical diagnosis accurate based on the symptoms?',
+      'Does this contract comply with regulatory requirements?',
+      'Should this content be flagged for inappropriate material?',
+      'Should we hire this candidate for the senior developer position?',
+      'Is this safety protocol adequate for the chemical handling process?',
+      'Should we approve this investment in renewable energy?',
+      'Does this patient need immediate medical intervention?',
+      'Is this legal document binding under current laws?',
+      'Should this video content be removed for policy violations?'
+    ];
     const randomQuestion = questions[Math.floor(Math.random() * questions.length)];
     createDecision(randomQuestion);
     
@@ -254,16 +491,23 @@ export default function DemoPage() {
 
   const resetDemo = () => {
     stopDemo();
-    setDecisions([]);
-    setTransactions([]);
+    // Reload mock data
+    const data = generateMockData();
+    setMockData(data);
+    // Get the most recent 10 decisions
+    const recentDecisions = data.mockDecisions
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .slice(0, 10);
+    setDecisions(recentDecisions);
+    setTransactions(data.mockTransactions.slice(0, 10));
     setStats({
-      total_decisions: 0,
-      validated_decisions: 0,
-      pending_decisions: 0,
-      average_confidence: 0,
+      total_decisions: data.mockDecisions.length,
+      validated_decisions: data.mockDecisions.filter(d => d.status === 'validated').length,
+      pending_decisions: data.mockDecisions.filter(d => d.status === 'pending').length,
+      average_confidence: Math.round(data.mockDecisions.reduce((sum, d) => sum + d.confidence, 0) / data.mockDecisions.length),
       system_status: 'healthy',
       ai_models_monitored: 3,
-      anomalies_detected: 0
+      anomalies_detected: data.mockTransactions.filter(t => t.status === 'anomaly_detected').length
     });
     setError(null);
     setSelectedDecision(null);
